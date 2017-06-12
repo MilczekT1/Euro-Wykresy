@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Groups.Controller">
+  <tabs>
+      <Tab closable="false" text="Profil zalogowanego użytkownika">
+         <content>
+            <SplitPane dividerPositions="0.29797979797979796" prefHeight="160.0" prefWidth="200.0">
+              <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                     <children>
+                        <Accordion prefHeight="567.0" prefWidth="234.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <panes>
+                              <TitledPane animated="false" prefHeight="343.0" prefWidth="263.0" text="Logowanie">
+                                 <content>
+                                    <GridPane prefHeight="317.0" prefWidth="255.0">
+                                       <children>
+                                          <Label alignment="CENTER" prefHeight="38.0" prefWidth="192.0" text="Login" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                             <font>
+                                                <Font size="20.0" />
+                                             </font>
+                                             <GridPane.margin>
+                                                <Insets />
+                                             </GridPane.margin>
+                                          </Label>
+                                          <Label alignment="CENTER" prefHeight="53.0" prefWidth="192.0" text="Password" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                             <font>
+                                                <Font size="20.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="login_Login" alignment="CENTER" maxHeight="30.0" prefHeight="32.0" prefWidth="192.0" promptText="login or email" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER" />
+                                          <TextField fx:id="login_Password" alignment="CENTER" maxHeight="30.0" prefHeight="48.0" prefWidth="192.0" promptText="password" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" />
+                                          <Button fx:id="login_LogInButton" mnemonicParsing="false" onMouseClicked="#loginUser" text="Sign in" GridPane.rowIndex="2" />
+                                          <Label fx:id="login_Label" GridPane.rowIndex="3" />
+                                       </children>
+                                       <columnConstraints>
+                                          <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
+                                          <RowConstraints minHeight="100.0" prefHeight="100.0" valignment="CENTER" vgrow="NEVER" />
+                                          <RowConstraints minHeight="100.0" prefHeight="100.0" vgrow="NEVER" />
+                                          <RowConstraints minHeight="100.0" prefHeight="100.0" vgrow="NEVER" />
+                                          <RowConstraints minHeight="100.0" prefHeight="100.0" vgrow="NEVER" />
+                                       </rowConstraints>
+                                    </GridPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane animated="false" text="Rejestracja">
+                                 <content>
+                                    <GridPane>
+                                       <children>
+                                          <Label text="Login" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                             <font>
+                                                <Font size="20.0" />
+                                             </font>
+                                          </Label>
+                                          <Label text="Password" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                             <font>
+                                                <Font size="20.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="register_Login" alignment="CENTER" promptText="Login or email" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.valignment="BOTTOM" />
+                                          <TextField fx:id="register_Password" alignment="CENTER" promptText="Password" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" />
+                                          <TextField fx:id="register_RepeatedPassword" alignment="CENTER" promptText="Repeat Password" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="BOTTOM" />
+                                          <Label text="Repeat Password" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                             <font>
+                                                <Font size="20.0" />
+                                             </font>
+                                          </Label>
+                                          <Button fx:id="register_SignInButton" mnemonicParsing="false" onMouseClicked="#registerUser" text="sign In" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                                          <Label fx:id="register_Label" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                                       </children>
+                                       <columnConstraints>
+                                          <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
+                                          <RowConstraints minHeight="100.0" prefHeight="100.0" vgrow="NEVER" />
+                                          <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="NEVER" />
+                                          <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="NEVER" />
+                                          <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="NEVER" />
+                                          <RowConstraints minHeight="10.0" prefHeight="100.0" valignment="CENTER" vgrow="NEVER" />
+                                       </rowConstraints>
+                                    </GridPane>
+                                 </content>
+                              </TitledPane>
+                              <TitledPane animated="false" text="untitled 3">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                 </content>
+                              </TitledPane>
+                           </panes>
+                        </Accordion>
+                     </children>
+                  </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+              </items>
+            </SplitPane>
+         </content>
+      </Tab>
+    <Tab fx:id="groupsTab" closable="false" text="Grupy">
+         <content>
+            <SplitPane dividerPositions="0.32957393483709274" minHeight="-Infinity" minWidth="-Infinity" prefHeight="569.0" prefWidth="800.0">
+              <items>
+                <AnchorPane maxWidth="400.0" minHeight="-Infinity" minWidth="-Infinity">
+                     <children>
+                        <TextField fx:id="newGroupTextField" disable="true" layoutY="172.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <Label layoutX="61.0" layoutY="155.0" text="Nazwa nowej grupy" />
+                        <ComboBox fx:id="comboMenuEdit" layoutY="410.0" promptText="Grupa do edycji" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                        <Label layoutX="46.0" layoutY="393.0" text="Wybierz grupę do edycji" />
+                        <CheckBox fx:id="addGroupChecker" layoutX="11.0" layoutY="21.0" mnemonicParsing="false" onMouseClicked="#handleMouseClicked_OnAddChecker" text="Dodawanie" AnchorPane.leftAnchor="11.0" />
+                        <CheckBox fx:id="editGroupChecker" layoutX="120.0" layoutY="21.0" mnemonicParsing="false" onMouseClicked="#handleMouseClicked_OnEditChecker" text="Edycja" />
+                        <Separator layoutY="49.0" prefHeight="11.0" prefWidth="234.0" style="-fx-border-width: 1;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="49.0" />
+                        <Button fx:id="addGroupButton" layoutX="165.0" layoutY="206.0" mnemonicParsing="false" onMouseClicked="#addGroup" text="Dodaj Grupę" />
+                        <Button fx:id="confirmChangesButton" layoutX="132.0" layoutY="449.0" mnemonicParsing="false" onMouseClicked="#handleMouseClicked_ConfirmChanges" text="Zatwierdź zmiany" />
+                     </children>
+                  </AnchorPane>
+                  <GridPane minWidth="-Infinity" prefWidth="300.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                    </rowConstraints>
+                     <children>
+                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+                           <content>
+                              <TableView fx:id="tableWithRemainingGates" fixedCellSize="24.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="276.0" prefWidth="528.0" tableMenuButtonVisible="true">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </TableView>
+                           </content>
+                        </ScrollPane>
+                        <ScrollPane fitToHeight="true" fitToWidth="true" pannable="true" prefHeight="200.0" prefWidth="200.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+                           <content>
+                              <TableView fx:id="tableWithCurrentGates" fixedCellSize="24.0" minHeight="-Infinity" prefHeight="276.0" prefWidth="528.0" tableMenuButtonVisible="true">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </TableView>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                  </GridPane>
+              </items>
+            </SplitPane>
+         </content>
+    </Tab>
+    <Tab closable="false" disable="true" text="Część Rolanda">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <Label alignment="CENTER" layoutX="400.0" layoutY="115.0" prefHeight="169.0" prefWidth="251.0" rotate="-38.7" text="TU BEDZIE WYKRES">
+                     <font>
+                        <Font size="23.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="19.0" layoutY="166.0" rotate="-40.6" text="FORMULARZ ROLANDA">
+                     <font>
+                        <Font size="23.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="452.0" layoutY="458.0" text="lista  dodaj_do_wykresu">
+                     <font>
+                        <Font size="23.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="452.0" layoutY="505.0" text="Lista usun_z_wykresu">
+                     <font>
+                        <Font size="23.0" />
+                     </font>
+                  </Label>
+               </children></AnchorPane>
+      </content>
+    </Tab>
+  </tabs>
+</TabPane>
