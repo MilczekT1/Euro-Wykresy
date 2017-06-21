@@ -1,4 +1,4 @@
-package sample.Groups;
+package sample.Main;
 
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -8,7 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
-import sample.exceptions.GuiAccessException;
+import sample.Exceptions.GuiAccessException;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -44,8 +44,9 @@ public class Controller implements Initializable{
     @FXML private ComboBox comboMenuEdit;
     private ObservableList<String> listToEdit;
     //-------------------------------------------------------------------LOGIN
-    
     private static Integer accessLevel;
+    @FXML TitledPane loginPane;
+    @FXML TitledPane registerPane;
     @FXML TextField login_Login;
     @FXML TextField login_Password;
     @FXML Button login_LogInButton;
@@ -68,6 +69,7 @@ public class Controller implements Initializable{
                 groupsTab.setDisable(false);
             else
                 groupsTab.setDisable(true);
+            registerPane.setDisable(true);
         }
         else {
             login_Label.setText("Nieudane logowanie");
@@ -79,7 +81,7 @@ public class Controller implements Initializable{
         String repeatedPassword = register_RepeatedPassword.getText();
         register_Label.setText("");
         if (password.equals(repeatedPassword) &&
-                    Pattern.matches("(\\w)+@(\\w)+\\.(\\w)+",login) &&
+                    Pattern.matches("(\\w)+_(\\w)",login) && // Imie_Nazwisko
                     Pattern.matches("^\\S{6,100}",password)) {
             if (DBAuthenticator.tryToRegister(login, DBAuthenticator.hashPassword(password))) {
                 register_Label.setDisable(false);
@@ -94,7 +96,7 @@ public class Controller implements Initializable{
             register_Label.setText("Nieprawidlowe dane!!");
         }
     }
-    //-------------------------------------------------------------------
+    //-------------------------------------------------------------------GROUPS
     private GuiDataContainer dataContainer;
     
     public void addGroup(){
@@ -109,6 +111,8 @@ public class Controller implements Initializable{
             //simulate enabling "Edycja" with mouse
             editGroupChecker.setSelected(true);
             handleMouseClicked_OnEditChecker();
+            //TODO: sprawdzic, jesli uda sie wywolac, to metody wrzuci sie do initListeners
+            //editGroupChecker.getOnMouseClicked();
         } catch (GuiAccessException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -132,6 +136,7 @@ public class Controller implements Initializable{
                 throw new GuiAccessException("ERROR: pole jest puste");
         }
     }
+    //TODO: zainicjowac te metody w initialize
     public void handleMouseClicked_ConfirmChanges(){
         try {
             dataContainer.setGroupId(DBGroupManager.dbGetGroupIdUsingGroupName(getNewGroupName()));
@@ -180,55 +185,18 @@ public class Controller implements Initializable{
         }
     }
     
-    public void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String>  newOptions) {
-        list.addAll(newOptions);
-        box.setItems(list);
-    }
-    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         dataContainer = GuiDataContainer.getInstance();
         listToEdit = FXCollections.observableArrayList();
         editGroupChecker.setSelected(true);
+    
+        groupsTab.setDisable(true);
         
         initTables();
-        groupsTab.setOnSelectionChanged( (e) -> {
-            tableWithRemainingGates.getItems().clear();
-            tableWithRemainingGates.getItems().addAll(DBGroupManager.dbGetAllGates());
-        });
-        groupsTab.setDisable(true);
-    
+        initListeners();
+        
         addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
-        comboMenuEdit.setOnAction((e) -> {
-            try {
-                dataContainer.setCurrentGroupName(getNewGroupName());
-                tableWithCurrentGates.setDisable(false);
-                List<Gate> gates = DBGroupManager.dbGetAllGatesFromGroup(dataContainer.getCurrentGroupName());
-                if (gates != null){
-                    currentGates = FXCollections.observableList(gates);
-    
-                    ObservableList<Gate> distinctGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
-                    distinctGates.removeAll(currentGates);
-    
-                    tableWithCurrentGates.getItems().clear();
-                    tableWithRemainingGates.getItems().clear();
-    
-                    tableWithCurrentGates.getItems().addAll(currentGates);
-                    tableWithRemainingGates.getItems().addAll(distinctGates);
-                } else {
-                    tableWithCurrentGates.getItems().clear();
-                }
-            } catch (GuiAccessException e1) {
-                e1.printStackTrace();
-            }
-        });
-        newGroupTextField.setOnKeyReleased((e) -> {
-            try {
-                dataContainer.setCurrentGroupName(getNewGroupName());
-            } catch (GuiAccessException e1) {
-                e1.printStackTrace();
-            }
-        });
     }
     private void initTables(){
         currentGateDescription = new TableColumn<>("Description");
@@ -259,7 +227,8 @@ public class Controller implements Initializable{
         tableWithRemainingGates.getColumns().addAll(remainingShortDescription, remainingGateDescription, remainingGateType, remainingGateMeasureType, remainingGateId);
         
         tableWithCurrentGates.setDisable(true);
-    
+    }
+    private void initListeners(){
         tableWithRemainingGates.setRowFactory(new Callback<TableView<Gate>, TableRow<Gate>>() {
             @Override
             public TableRow<Gate> call(TableView<Gate> tableView) {
@@ -303,6 +272,45 @@ public class Controller implements Initializable{
                 return row ;
             }
         });
-    }
     
+        groupsTab.setOnSelectionChanged( (e) -> {
+            tableWithRemainingGates.getItems().clear();
+            tableWithRemainingGates.getItems().addAll(DBGroupManager.dbGetAllGates());
+        });
+    
+        comboMenuEdit.setOnAction((e) -> {
+            try {
+                dataContainer.setCurrentGroupName(getNewGroupName());
+                tableWithCurrentGates.setDisable(false);
+                List<Gate> gates = DBGroupManager.dbGetAllGatesFromGroup(dataContainer.getCurrentGroupName());
+                if (gates != null){
+                    currentGates = FXCollections.observableList(gates);
+                
+                    ObservableList<Gate> distinctGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
+                    distinctGates.removeAll(currentGates);
+                
+                    tableWithCurrentGates.getItems().clear();
+                    tableWithRemainingGates.getItems().clear();
+                
+                    tableWithCurrentGates.getItems().addAll(currentGates);
+                    tableWithRemainingGates.getItems().addAll(distinctGates);
+                } else {
+                    tableWithCurrentGates.getItems().clear();
+                }
+            } catch (GuiAccessException e1) {
+                e1.printStackTrace();
+            }
+        });
+        newGroupTextField.setOnKeyReleased((e) -> {
+            try {
+                dataContainer.setCurrentGroupName(getNewGroupName());
+            } catch (GuiAccessException e1) {
+                e1.printStackTrace();
+            }
+        });
+    }
+    public void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String>  newOptions) {
+        list.addAll(newOptions);
+        box.setItems(list);
+    }
 }
