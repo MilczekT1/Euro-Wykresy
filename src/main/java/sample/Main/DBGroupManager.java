@@ -1,7 +1,9 @@
-package sample.Groups;
+package sample.Main;
 
+import com.google.common.base.Throwables;
 import lombok.Cleanup;
-import sample.Main.Configurator;
+import sample.General.Configurator;
+import sample.General.MyLogger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,9 +15,9 @@ import java.sql.*;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 
 final class DBGroupManager {
-    
     private static Configurator config = Configurator.getInstance();
     private static final String DB = "jdbc:sqlserver://"
                                              + Configurator.getCurrentSettings().getProperty("Server-Adress");
@@ -24,17 +26,11 @@ final class DBGroupManager {
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static Connection connection;
     private static DBGroupManager instance = new DBGroupManager();
-    private static GuiDataContainer gdc = GuiDataContainer.getInstance();
-    
-    public static DBGroupManager getInstance(){
-        return instance;
-    }
 
     private DBGroupManager(){
         try {
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
-            createTablesIfNotExists();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -42,8 +38,15 @@ final class DBGroupManager {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
+            System.exit(1);
+        }
+    
+        try {
+            createTablesIfNotExists();
+        } catch (SQLException e) {
+            //TODO: po dodaniu batchy, zmienic
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
     private void createTablesIfNotExists() throws SQLException {
@@ -53,11 +56,14 @@ final class DBGroupManager {
         try {
             Path path = Paths.get("src/main/resources/", "Create_Groups.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
+            //TODO: dodaj batcha by jeden error nie gubil reszty, potem zmien obsluge wyjatku w creattablesifnoteist
+            //List<String> queries = new LinkedList<>();
             
             String query = "";
             for (String line : lines){
                 query += line;
                 if (line.endsWith(";")){
+                    
                     statement.execute(query);
                     query = "";
                 }
@@ -81,7 +87,7 @@ final class DBGroupManager {
             }
             return list;
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
         return Collections.EMPTY_LIST;
     }
@@ -95,7 +101,6 @@ final class DBGroupManager {
             ResultSet rs = preStatement.executeQuery();
             if(rs.next()) {
                 String wantedId = rs.getString("Id_grupy");
-                
                 
                 String getDataSQL = "USE wizualizacja2; SELECT description, Slownik.gateId, rodzajPomiaru,rodzajBramki, LongGate FROM Slownik Join KONRAD_BRAMKI ON KONRAD_BRAMKI.GateId=Slownik.gateId WHERE Id_grupy=?;";
                 
@@ -117,7 +122,7 @@ final class DBGroupManager {
                 return gates;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
         return null;
     }
@@ -148,7 +153,7 @@ final class DBGroupManager {
             }
             return gates;
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
         return null;
     }
@@ -166,7 +171,7 @@ final class DBGroupManager {
                 throw new SQLException("Brak szukanej bramki!");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
         return null;
     }
@@ -198,7 +203,7 @@ final class DBGroupManager {
                 throw new SQLException("there is no such gate " + gateId);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
         return null;
     }
@@ -240,7 +245,7 @@ final class DBGroupManager {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
 }
