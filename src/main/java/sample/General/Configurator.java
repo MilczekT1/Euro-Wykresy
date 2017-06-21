@@ -1,4 +1,4 @@
-package sample.Utils;
+package sample.General;
 
 import javafx.scene.control.TextInputDialog;
 import lombok.Cleanup;

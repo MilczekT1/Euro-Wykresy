@@ -1,4 +1,4 @@
-package sample.Utils;
+package sample.General;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
