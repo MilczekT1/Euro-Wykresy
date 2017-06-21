@@ -1,9 +1,9 @@
-package sample.Groups.GateThreads;
+package sample.Main;
 
 import java.util.LinkedList;
 
 //TODO: implement data
-public class GateDataImporter extends Thread {
+class GateDataImporter extends Thread {
     
     private LinkedList<Integer> values;
     
