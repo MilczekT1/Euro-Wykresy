@@ -1,7 +1,9 @@
-package sample.Groups;
+package sample.Main;
 
+import com.google.common.base.Throwables;
 import lombok.Cleanup;
-import sample.Main.Configurator;
+import sample.General.Configurator;
+import sample.General.MyLogger;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.FileNotFoundException;
@@ -15,6 +17,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.List;
+import java.util.logging.Level;
 
 public final class DBAuthenticator {
     private static Configurator config = Configurator.getInstance();
@@ -34,16 +37,20 @@ public final class DBAuthenticator {
         try {
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
-            createTablesIfNotExists();
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e));
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (SQLException e) {
-            e.printStackTrace();
-            return;
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e));
+            System.exit(1);
+        }
+        try {
+            createTablesIfNotExists();
+        } catch (SQLException e) {
+            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e));
         }
     }
     private void createTablesIfNotExists() throws SQLException {
@@ -52,7 +59,7 @@ public final class DBAuthenticator {
         try {
             Path path = Paths.get("src/main/resources/", "Create_Users.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
-            
+            //TODO: batch
             String query = "";
             for (String line : lines){
                 query += line;
@@ -87,7 +94,7 @@ public final class DBAuthenticator {
             }
             
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.INFO,Throwables.getStackTraceAsString(e));
             return false;
         }
     }
@@ -112,7 +119,7 @@ public final class DBAuthenticator {
                 return true;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e));
             return false;
         }
     }
@@ -122,9 +129,9 @@ public final class DBAuthenticator {
             byte[] hashArray = digest.digest(password.getBytes("UTF-8"));
             return DatatypeConverter.printHexBinary(hashArray);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e));
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e));
         }
         return null;
     }
