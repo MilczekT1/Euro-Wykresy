@@ -7,7 +7,6 @@ import java.util.logging.*;
 public class MyLogger {
     
     public static MyLogger instance = new MyLogger();
-    
     private static Logger logger;
     private static FileHandler fileHandler;
     
@@ -20,7 +19,6 @@ public class MyLogger {
             public synchronized String format(LogRecord record) {
                 return LocalDateTime.now().toString() + " " +
                                record.getLevel() + ":" +
-                               record.getLoggerName() + " " +
                                record.getMessage() +"\n";
             }
         };
@@ -49,5 +47,9 @@ public class MyLogger {
     }
     public void setOrChangeFormatter(SimpleFormatter newSimpleFormatter){
         fileHandler.setFormatter(newSimpleFormatter);
+    }
+    
+    public static Logger getLogger() {
+        return logger;
     }
 }
