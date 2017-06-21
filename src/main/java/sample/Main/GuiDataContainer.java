@@ -1,4 +1,4 @@
-package sample.Groups;
+package sample.Main;
 import lombok.Data;
 
 // Container for logic variable in Controller
