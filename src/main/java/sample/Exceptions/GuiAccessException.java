@@ -1,4 +1,4 @@
-package sample.exceptions;
+package sample.Exceptions;
 
 public class GuiAccessException extends Exception {
     public GuiAccessException(){
