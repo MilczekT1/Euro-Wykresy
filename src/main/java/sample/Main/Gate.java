@@ -1,28 +1,12 @@
-package sample.Groups;
+package sample.Main;
 
 import javafx.beans.property.SimpleStringProperty;
-import sample.Groups.GateThreads.GateDataImporter;
 
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class Gate {
-    
-    public static void main(String[] args) {
-        LinkedList<Integer> list = new LinkedList<>();
-        LinkedList<Integer> list2 = new LinkedList<>();
-        list.add(1); list.add(2); list.add(3);
-        list2.add(4); list2.add(5); list2.add(6);
-        ExecutorService exs = Executors.newFixedThreadPool(2);
-        exs.execute(new GateDataImporter(list));
-        exs.execute(new GateDataImporter(list2));
-        exs.shutdown();
-        while (!exs.isTerminated()) {
-        }
-        System.out.println("end");
-    }
-    ////////////////////////////////////
+final class Gate {
     private final SimpleStringProperty description;
     private final SimpleStringProperty gateId;
     private final SimpleStringProperty groupId;
