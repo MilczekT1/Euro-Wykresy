@@ -1,5 +1,6 @@
 package sample.Main;
 
+import com.google.common.base.Throwables;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,10 +10,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 import sample.Exceptions.GuiAccessException;
+import sample.General.MyLogger;
 
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class Controller implements Initializable{
@@ -81,7 +84,7 @@ public class Controller implements Initializable{
         String repeatedPassword = register_RepeatedPassword.getText();
         register_Label.setText("");
         if (password.equals(repeatedPassword) &&
-                    Pattern.matches("(\\w)+_(\\w)",login) && // Imie_Nazwisko
+                    Pattern.matches("(\\w)+_(\\w)",login) && // Name_LastName
                     Pattern.matches("^\\S{6,100}",password)) {
             if (DBAuthenticator.tryToRegister(login, DBAuthenticator.hashPassword(password))) {
                 register_Label.setDisable(false);
@@ -111,13 +114,13 @@ public class Controller implements Initializable{
             //simulate enabling "Edycja" with mouse
             editGroupChecker.setSelected(true);
             handleMouseClicked_OnEditChecker();
-            //TODO: sprawdzic, jesli uda sie wywolac, to metody wrzuci sie do initListeners
+            //TODO: sprawdzic, jesli uda sie wywolac, to metode wrzuci sie do initListeners
             //editGroupChecker.getOnMouseClicked();
         } catch (GuiAccessException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         } catch (SQLException e) {
             // Communication error or tried to insert group with existing name.
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
     public String getNewGroupName() throws GuiAccessException {
@@ -126,7 +129,7 @@ public class Controller implements Initializable{
                 return comboMenuEdit.getSelectionModel().getSelectedItem().toString();
             }
             else {
-                throw new GuiAccessException("ERROD: nie wybrano grupy do edycji");
+                throw new GuiAccessException("ERROR: nie wybrano grupy do edycji");
             }
         else {
             String result = newGroupTextField.getText();
@@ -145,7 +148,7 @@ public class Controller implements Initializable{
                 DBGroupManager.dbInsertCurrentGatesIntoGroup(gate.getGateId(), dataContainer.getGroupId());
             }
         } catch (GuiAccessException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
     public void handleMouseClicked_OnAddChecker(){
@@ -176,7 +179,6 @@ public class Controller implements Initializable{
             comboMenuEdit.getSelectionModel().clearSelection();
             newGroupTextField.setDisable(true);
             newGroupTextField.setText("");
-
         }
         else{
             if (!addGroupChecker.isSelected()){
