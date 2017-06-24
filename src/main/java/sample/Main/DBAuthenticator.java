@@ -20,7 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
-public final class DBAuthenticator {
+final class DBAuthenticator {
     private static Configurator config = Configurator.getInstance();
     private static final String DB = "jdbc:sqlserver://"
                                              + Configurator.getCurrentSettings().getProperty("Server-Adress");

@@ -97,7 +97,7 @@ final class DBGroupManager {
         }
         return Collections.EMPTY_LIST;
     }
-    protected static LinkedList<Gate> dbGetAllGatesFromGroup(String groupName){
+    protected static LinkedList<GroupGate> dbGetAllGatesFromGroup(String groupName){
         try {
             String getGroupIdSQL = "USE wizualizacja2; SELECT Id_grupy FROM KONRAD_GRUPY WHERE Nazwa = ?;";
             @Cleanup
@@ -114,7 +114,7 @@ final class DBGroupManager {
                 preStatement.setString(1,wantedId);
                 rs = preStatement.executeQuery();
                 
-                LinkedList<Gate> gates = new LinkedList<>();
+                LinkedList<GroupGate> groupGates = new LinkedList<>();
                 while (rs.next()) {
                     String[] strings = new String[6];
                     strings[0] = rs.getString("description");
@@ -123,16 +123,16 @@ final class DBGroupManager {
                     strings[3] = rs.getString("rodzajPomiaru");
                     strings[4] = rs.getString("rodzajBramki");
                     strings[5] = rs.getString("LongGate");
-                    gates.add(new Gate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
+                    groupGates.add(new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
                 }
-                return gates;
+                return groupGates;
             }
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
         return null;
     }
-    protected static LinkedList<Gate> dbGetAllGates(){
+    protected static LinkedList<GroupGate> dbGetAllGates(){
         try {
             String sql = "USE wizualizacja2 " +
                                  "SELECT gateId " +
@@ -146,7 +146,7 @@ final class DBGroupManager {
 
             @Cleanup
             ResultSet rs = statement.executeQuery(sql);
-            LinkedList<Gate> gates = new LinkedList<>();
+            LinkedList<GroupGate> groupGates = new LinkedList<>();
             while (rs.next()) {
                 String[] strings = new String[6];
                 strings[0] = rs.getString("Opis");
@@ -155,9 +155,9 @@ final class DBGroupManager {
                 strings[3] = rs.getString("rodzajPomiaru");
                 strings[4] = rs.getString("rodzajBramki");
                 strings[5] = rs.getString("Skrocona_Nazwa");
-                gates.add(new Gate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
+                groupGates.add(new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
             }
-            return gates;
+            return groupGates;
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
@@ -181,7 +181,7 @@ final class DBGroupManager {
         }
         return null;
     }
-    protected static Gate dbGetGateUsingGateId(String gateId){
+    protected static GroupGate dbGetGateUsingGateId(String gateId){
         try {
             String sql = "USE wizualizacja2 "
                                  + "SELECT gateId " +
@@ -204,7 +204,7 @@ final class DBGroupManager {
                 strings[3] = rs.getString("rodzajPomiaru");
                 strings[4] = rs.getString("rodzajBramki");
                 strings[5] = rs.getString("Skrocona_Nazwa");
-                return new Gate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]);
+                return new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]);
             }else{
                 throw new SQLException("there is no such gate " + gateId);
             }

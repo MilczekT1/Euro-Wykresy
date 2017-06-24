@@ -2,11 +2,7 @@ package sample.Main;
 
 import javafx.beans.property.SimpleStringProperty;
 
-import java.util.LinkedList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-final class Gate {
+final class GroupGate {
     private final SimpleStringProperty description;
     private final SimpleStringProperty gateId;
     private final SimpleStringProperty groupId;
@@ -14,7 +10,7 @@ final class Gate {
     private final SimpleStringProperty gateType;
     private final SimpleStringProperty shortDescription;
 
-    public Gate(String desc, String gateid, String groupid, String measure, String gateType, String shortDescription){
+    public GroupGate(String desc, String gateid, String groupid, String measure, String gateType, String shortDescription){
         this.description = new SimpleStringProperty(desc);
         this.gateId = new SimpleStringProperty(gateid);
         this.groupId = new SimpleStringProperty(groupid);
@@ -68,9 +64,9 @@ final class Gate {
         if (o == null || getClass() != o.getClass())
             return false;
         
-        Gate gate = (Gate) o;
+        GroupGate groupGate = (GroupGate) o;
     
-        return getGateId().equals(gate.getGateId());
+        return getGateId().equals(groupGate.getGateId());
     }
     
     @Override

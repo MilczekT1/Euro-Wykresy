@@ -23,21 +23,21 @@ public class Controller implements Initializable{
     @FXML Tab groupsTab;
     //-------------------------------------------------------------------GROUP MANAGER (RIGHT)
     @FXML
-    private TableView<Gate> tableWithCurrentGates;
-    private TableColumn<Gate,String>  currentGateDescription;
-    private TableColumn<Gate,String>  currentShortDescription;
-    private TableColumn<Gate,String>  currentGateType;
-    private TableColumn<Gate,String>  currentGateMeasureType;
-    private TableColumn<Gate,String>  currentGateId;
-    private ObservableList<Gate> currentGates;
+    private TableView<GroupGate> tableWithCurrentGates;
+    private TableColumn<GroupGate,String>  currentGateDescription;
+    private TableColumn<GroupGate,String>  currentShortDescription;
+    private TableColumn<GroupGate,String>  currentGateType;
+    private TableColumn<GroupGate,String>  currentGateMeasureType;
+    private TableColumn<GroupGate,String>  currentGateId;
+    private ObservableList<GroupGate> currentGroupGates;
     
     @FXML
-    private TableView<Gate> tableWithRemainingGates;
-    private TableColumn<Gate,String> remainingGateDescription;
-    private TableColumn<Gate,String> remainingShortDescription;
-    private TableColumn<Gate,String> remainingGateType;
-    private TableColumn<Gate,String> remainingGateMeasureType;
-    private TableColumn<Gate,String> remainingGateId;
+    private TableView<GroupGate> tableWithRemainingGates;
+    private TableColumn<GroupGate,String> remainingGateDescription;
+    private TableColumn<GroupGate,String> remainingShortDescription;
+    private TableColumn<GroupGate,String> remainingGateType;
+    private TableColumn<GroupGate,String> remainingGateMeasureType;
+    private TableColumn<GroupGate,String> remainingGateId;
     //-------------------------------------------------------------------GROUP MANAGER (LEFT)
     @FXML CheckBox addGroupChecker;
     @FXML CheckBox editGroupChecker;
@@ -143,9 +143,9 @@ public class Controller implements Initializable{
     public void handleMouseClicked_ConfirmChanges(){
         try {
             dataContainer.setGroupId(DBGroupManager.dbGetGroupIdUsingGroupName(getNewGroupName()));
-            for(Gate gate: tableWithCurrentGates.getItems()){
-                // gate does not always contain groupId -> use dataContainer
-                DBGroupManager.dbInsertCurrentGatesIntoGroup(gate.getGateId(), dataContainer.getGroupId());
+            for(GroupGate groupGate : tableWithCurrentGates.getItems()){
+                // groupGate does not always contain groupId -> use dataContainer
+                DBGroupManager.dbInsertCurrentGatesIntoGroup(groupGate.getGateId(), dataContainer.getGroupId());
             }
         } catch (GuiAccessException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
@@ -213,17 +213,17 @@ public class Controller implements Initializable{
         remainingGateMeasureType = new TableColumn("MeasureType");
         remainingGateId = new TableColumn<>("GateId");
         
-        currentGateDescription.setCellValueFactory(new PropertyValueFactory<Gate, String>("Description"));
-        currentGateId.setCellValueFactory(new PropertyValueFactory<Gate, String>("GateId"));
-        currentGateMeasureType.setCellValueFactory(new PropertyValueFactory<Gate, String>("MeasureType"));
-        currentGateType.setCellValueFactory(new PropertyValueFactory<Gate, String>("GateType"));
-        currentShortDescription.setCellValueFactory(new PropertyValueFactory<Gate, String>("ShortDescription"));
+        currentGateDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("Description"));
+        currentGateId.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateId"));
+        currentGateMeasureType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("MeasureType"));
+        currentGateType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateType"));
+        currentShortDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("ShortDescription"));
         
-        remainingGateDescription.setCellValueFactory(new PropertyValueFactory<Gate, String>("Description"));
-        remainingGateId.setCellValueFactory(new PropertyValueFactory<Gate, String>("GateId"));
-        remainingGateMeasureType.setCellValueFactory(new PropertyValueFactory<Gate, String>("MeasureType"));
-        remainingGateType.setCellValueFactory(new PropertyValueFactory<Gate, String>("GateType"));
-        remainingShortDescription.setCellValueFactory(new PropertyValueFactory<Gate, String>("ShortDescription"));
+        remainingGateDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("Description"));
+        remainingGateId.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateId"));
+        remainingGateMeasureType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("MeasureType"));
+        remainingGateType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateType"));
+        remainingShortDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("ShortDescription"));
         
         tableWithCurrentGates.getColumns().addAll(currentShortDescription, currentGateDescription, currentGateType, currentGateMeasureType, currentGateId);
         tableWithRemainingGates.getColumns().addAll(remainingShortDescription, remainingGateDescription, remainingGateType, remainingGateMeasureType, remainingGateId);
@@ -231,16 +231,16 @@ public class Controller implements Initializable{
         tableWithCurrentGates.setDisable(true);
     }
     private void initListeners(){
-        tableWithRemainingGates.setRowFactory(new Callback<TableView<Gate>, TableRow<Gate>>() {
+        tableWithRemainingGates.setRowFactory(new Callback<TableView<GroupGate>, TableRow<GroupGate>>() {
             @Override
-            public TableRow<Gate> call(TableView<Gate> tableView) {
-                final TableRow<Gate> row = new TableRow<>();
+            public TableRow<GroupGate> call(TableView<GroupGate> tableView) {
+                final TableRow<GroupGate> row = new TableRow<>();
                 final ContextMenu contextMenu = new ContextMenu();
                 final MenuItem removeMenuItem = new MenuItem("Dodaj do grupy");
                 contextMenu.getItems().add(removeMenuItem);
                 removeMenuItem.setOnAction((e) -> {
-                    Gate lastAddedGate = tableWithRemainingGates.getItems().get(row.getIndex());
-                    tableWithCurrentGates.getItems().add(lastAddedGate);
+                    GroupGate lastAddedGroupGate = tableWithRemainingGates.getItems().get(row.getIndex());
+                    tableWithCurrentGates.getItems().add(lastAddedGroupGate);
                     tableWithRemainingGates.getItems().remove(row.getItem());
                 });
                 // Set context menu on row, but use a binding to make it only show for non-empty rows:
@@ -252,16 +252,16 @@ public class Controller implements Initializable{
                 return row ;
             }
         });
-        tableWithCurrentGates.setRowFactory(new Callback<TableView<Gate>, TableRow<Gate>>() {
+        tableWithCurrentGates.setRowFactory(new Callback<TableView<GroupGate>, TableRow<GroupGate>>() {
             @Override
-            public TableRow<Gate> call(TableView<Gate> tableView) {
-                final TableRow<Gate> row = new TableRow<>();
+            public TableRow<GroupGate> call(TableView<GroupGate> tableView) {
+                final TableRow<GroupGate> row = new TableRow<>();
                 final ContextMenu contextMenu = new ContextMenu();
                 final MenuItem removeMenuItem = new MenuItem("Usuń z grupy");
                 contextMenu.getItems().add(removeMenuItem);
                 removeMenuItem.setOnAction((e) -> {
-                    Gate lastRemovedGate = tableWithCurrentGates.getItems().get(row.getIndex());
-                    tableWithRemainingGates.getItems().add(lastRemovedGate);
+                    GroupGate lastRemovedGroupGate = tableWithCurrentGates.getItems().get(row.getIndex());
+                    tableWithRemainingGates.getItems().add(lastRemovedGroupGate);
                     tableWithCurrentGates.getItems().remove(row.getItem());
                     tableWithCurrentGates.sort();
                 });
@@ -284,18 +284,18 @@ public class Controller implements Initializable{
             try {
                 dataContainer.setCurrentGroupName(getNewGroupName());
                 tableWithCurrentGates.setDisable(false);
-                List<Gate> gates = DBGroupManager.dbGetAllGatesFromGroup(dataContainer.getCurrentGroupName());
-                if (gates != null){
-                    currentGates = FXCollections.observableList(gates);
+                List<GroupGate> groupGates = DBGroupManager.dbGetAllGatesFromGroup(dataContainer.getCurrentGroupName());
+                if (groupGates != null){
+                    currentGroupGates = FXCollections.observableList(groupGates);
                 
-                    ObservableList<Gate> distinctGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
-                    distinctGates.removeAll(currentGates);
+                    ObservableList<GroupGate> distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
+                    distinctGroupGates.removeAll(currentGroupGates);
                 
                     tableWithCurrentGates.getItems().clear();
                     tableWithRemainingGates.getItems().clear();
                 
-                    tableWithCurrentGates.getItems().addAll(currentGates);
-                    tableWithRemainingGates.getItems().addAll(distinctGates);
+                    tableWithCurrentGates.getItems().addAll(currentGroupGates);
+                    tableWithRemainingGates.getItems().addAll(distinctGroupGates);
                 } else {
                     tableWithCurrentGates.getItems().clear();
                 }

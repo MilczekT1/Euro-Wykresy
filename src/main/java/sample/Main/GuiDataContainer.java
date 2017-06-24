@@ -3,7 +3,7 @@ import lombok.Data;
 
 // Container for logic variable in Controller
 @Data
-class GuiDataContainer {
+final class GuiDataContainer {
     private static GuiDataContainer instance = new GuiDataContainer();
     
     private GuiDataContainer(){};

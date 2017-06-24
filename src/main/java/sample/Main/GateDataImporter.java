@@ -3,7 +3,7 @@ package sample.Main;
 import java.util.LinkedList;
 
 //TODO: implement data
-class GateDataImporter extends Thread {
+final class GateDataImporter extends Thread {
     
     private LinkedList<Integer> values;
     
