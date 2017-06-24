@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main.Controller">
+<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main.Controller">
   <tabs>
       <Tab closable="false" text="Profil zalogowanego użytkownika">
          <content>
-            <SplitPane dividerPositions="0.29797979797979796" prefHeight="160.0" prefWidth="200.0">
+            <SplitPane dividerPositions="0.4625" prefHeight="160.0" prefWidth="200.0">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                      <children>
@@ -28,14 +27,14 @@
                                                 <Insets />
                                              </GridPane.margin>
                                           </Label>
-                                          <Label alignment="CENTER" prefHeight="53.0" prefWidth="192.0" text="Password" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                          <Label alignment="CENTER" prefHeight="53.0" prefWidth="192.0" text="Hasło" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                                              <font>
                                                 <Font size="20.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="login_Login" alignment="CENTER" maxHeight="30.0" prefHeight="32.0" prefWidth="192.0" promptText="login or email" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER" />
-                                          <TextField fx:id="login_Password" alignment="CENTER" maxHeight="30.0" prefHeight="48.0" prefWidth="192.0" promptText="password" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" />
-                                          <Button fx:id="login_LogInButton" mnemonicParsing="false" onMouseClicked="#loginUser" text="Sign in" GridPane.rowIndex="2" />
+                                          <TextField fx:id="login_Login" alignment="CENTER" maxHeight="30.0" maxWidth="300.0" minWidth="200.0" promptText="Imie_Nazwisko" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER" />
+                                          <TextField fx:id="login_Password" alignment="CENTER" maxHeight="30.0" maxWidth="300.0" minWidth="200.0" promptText="Hasło (min 6 znakow)" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" />
+                                          <Button fx:id="login_LogInButton" mnemonicParsing="false" onMouseClicked="#loginUser" text="Zaloguj" GridPane.rowIndex="2" />
                                           <Label fx:id="login_Label" GridPane.rowIndex="3" />
                                        </children>
                                        <columnConstraints>
@@ -59,20 +58,20 @@
                                                 <Font size="20.0" />
                                              </font>
                                           </Label>
-                                          <Label text="Password" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                          <Label text="Hasło" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                                              <font>
                                                 <Font size="20.0" />
                                              </font>
                                           </Label>
-                                          <TextField fx:id="register_Login" alignment="CENTER" promptText="Login or email" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.valignment="BOTTOM" />
-                                          <TextField fx:id="register_Password" alignment="CENTER" promptText="Password" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" />
-                                          <TextField fx:id="register_RepeatedPassword" alignment="CENTER" promptText="Repeat Password" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="BOTTOM" />
-                                          <Label text="Repeat Password" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                          <TextField fx:id="register_Login" alignment="CENTER" maxHeight="30.0" maxWidth="300.0" minWidth="200.0" promptText="Imie_Nazwisko" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.valignment="BOTTOM" />
+                                          <TextField fx:id="register_Password" alignment="CENTER" maxHeight="30.0" maxWidth="300.0" minWidth="200.0" promptText="Hasło (min 6 znaków)" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" />
+                                          <TextField fx:id="register_RepeatedPassword" alignment="CENTER" maxHeight="30.0" maxWidth="300.0" minWidth="200.0" promptText="Powtórz hasło" style="-fx-background-radius: 100;" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="BOTTOM" />
+                                          <Label text="Powtórz Hasło" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                                              <font>
                                                 <Font size="20.0" />
                                              </font>
                                           </Label>
-                                          <Button fx:id="register_SignInButton" mnemonicParsing="false" onMouseClicked="#registerUser" text="sign In" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                                          <Button fx:id="register_SignInButton" mnemonicParsing="false" onMouseClicked="#registerUser" text="Zarejestruj" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
                                           <Label fx:id="register_Label" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
                                        </children>
                                        <columnConstraints>
@@ -88,7 +87,7 @@
                                     </GridPane>
                                  </content>
                               </TitledPane>
-                              <TitledPane animated="false" text="untitled 3">
+                              <TitledPane animated="false" disable="true" text="Konfiguracja">
                                  <content>
                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
                                  </content>
@@ -102,6 +101,23 @@
             </SplitPane>
          </content>
       </Tab>
+    <Tab closable="false" text="Część Rolanda">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <Label alignment="CENTER" layoutX="400.0" layoutY="115.0" prefHeight="169.0" prefWidth="251.0" rotate="-38.7" text="TU BEDZIE WYKRES">
+                     <font>
+                        <Font size="23.0" />
+                     </font>
+                  </Label>
+                  <ComboBox layoutX="506.0" layoutY="492.0" prefHeight="27.0" prefWidth="242.0" promptText="Usun z wykresu" />
+                  <ComboBox layoutX="506.0" layoutY="454.0" prefHeight="27.0" prefWidth="243.0" promptText="Dodaj do wykresu" />
+                  <DatePicker layoutX="19.0" layoutY="98.0" promptText="Od" />
+                  <DatePicker layoutX="19.0" layoutY="146.0" promptText="Do" />
+                  <ComboBox layoutX="41.0" layoutY="42.0" prefWidth="150.0" promptText="Wybierz grupę" />
+               </children></AnchorPane>
+      </content>
+    </Tab>
     <Tab fx:id="groupsTab" closable="false" text="Grupy">
          <content>
             <SplitPane dividerPositions="0.32957393483709274" minHeight="-Infinity" minWidth="-Infinity" prefHeight="569.0" prefWidth="800.0">
@@ -151,23 +167,6 @@
               </items>
             </SplitPane>
          </content>
-    </Tab>
-    <Tab closable="false" text="Część Rolanda">
-      <content>
-        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-               <children>
-                  <Label alignment="CENTER" layoutX="400.0" layoutY="115.0" prefHeight="169.0" prefWidth="251.0" rotate="-38.7" text="TU BEDZIE WYKRES">
-                     <font>
-                        <Font size="23.0" />
-                     </font>
-                  </Label>
-                  <ComboBox layoutX="506.0" layoutY="492.0" prefHeight="27.0" prefWidth="242.0" promptText="Usun z wykresu" />
-                  <ComboBox layoutX="506.0" layoutY="454.0" prefHeight="27.0" prefWidth="243.0" promptText="Dodaj do wykresu" />
-                  <DatePicker layoutX="19.0" layoutY="98.0" promptText="Od" />
-                  <DatePicker layoutX="19.0" layoutY="146.0" promptText="Do" />
-                  <ComboBox layoutX="41.0" layoutY="42.0" prefWidth="150.0" promptText="Wybierz grupę" />
-               </children></AnchorPane>
-      </content>
     </Tab>
   </tabs>
 </TabPane>
