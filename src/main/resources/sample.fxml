@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import java.lang.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Groups.Controller">
+<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main.Controller">
   <tabs>
       <Tab closable="false" text="Profil zalogowanego użytkownika">
          <content>
@@ -16,7 +16,7 @@
                      <children>
                         <Accordion prefHeight="567.0" prefWidth="234.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <panes>
-                              <TitledPane animated="false" prefHeight="343.0" prefWidth="263.0" text="Logowanie">
+                              <TitledPane fx:id="loginPane" animated="false" prefHeight="343.0" prefWidth="263.0" text="Logowanie">
                                  <content>
                                     <GridPane prefHeight="317.0" prefWidth="255.0">
                                        <children>
@@ -50,7 +50,7 @@
                                     </GridPane>
                                  </content>
                               </TitledPane>
-                              <TitledPane animated="false" text="Rejestracja">
+                              <TitledPane fx:id="registerPane" animated="false" text="Rejestracja">
                                  <content>
                                     <GridPane>
                                        <children>
@@ -152,7 +152,7 @@
             </SplitPane>
          </content>
     </Tab>
-    <Tab closable="false" disable="true" text="Część Rolanda">
+    <Tab closable="false" text="Część Rolanda">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
@@ -161,21 +161,11 @@
                         <Font size="23.0" />
                      </font>
                   </Label>
-                  <Label layoutX="19.0" layoutY="166.0" rotate="-40.6" text="FORMULARZ ROLANDA">
-                     <font>
-                        <Font size="23.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="452.0" layoutY="458.0" text="lista  dodaj_do_wykresu">
-                     <font>
-                        <Font size="23.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="452.0" layoutY="505.0" text="Lista usun_z_wykresu">
-                     <font>
-                        <Font size="23.0" />
-                     </font>
-                  </Label>
+                  <ComboBox layoutX="506.0" layoutY="492.0" prefHeight="27.0" prefWidth="242.0" promptText="Usun z wykresu" />
+                  <ComboBox layoutX="506.0" layoutY="454.0" prefHeight="27.0" prefWidth="243.0" promptText="Dodaj do wykresu" />
+                  <DatePicker layoutX="19.0" layoutY="98.0" promptText="Od" />
+                  <DatePicker layoutX="19.0" layoutY="146.0" promptText="Do" />
+                  <ComboBox layoutX="41.0" layoutY="42.0" prefWidth="150.0" promptText="Wybierz grupę" />
                </children></AnchorPane>
       </content>
     </Tab>
