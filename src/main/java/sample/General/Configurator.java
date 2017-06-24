@@ -22,7 +22,7 @@ public final class Configurator {
     }
     
     private Configurator(){
-        File propertiesFile = new File("program.properties");
+        File propertiesFile = new File("application.properties");
         if (!propertiesFile.exists()) {
             setDefaultSettings();
             logger.log(Level.CONFIG, "Wprowadzono nowa konfiguracje");
@@ -82,8 +82,9 @@ public final class Configurator {
             currentSettings =  (Properties) defSettings.clone();
             defaultSettings = (Properties) defSettings.clone();
             @Cleanup
-            FileOutputStream out = new FileOutputStream("program.properties");
+            FileOutputStream out = new FileOutputStream("application.properties");
             currentSettings.store(out, "Ustawienia programu");
+            logger.log(Level.CONFIG, "Pomyslnie dodano konfiguracje programu");
         } catch (FileNotFoundException e) {
             logger.log(Level.SEVERE,"Nie znaleziono pliku konfiguracyjnego (prawdopodobnie usuniety recznie)");
             System.exit(1);
@@ -98,7 +99,7 @@ public final class Configurator {
             defaultSettings = new Properties();
             currentSettings = new Properties();
             @Cleanup
-            FileInputStream in = new FileInputStream("program.properties");
+            FileInputStream in = new FileInputStream("application.properties");
             defaultSettings.load(in);
             currentSettings = (Properties) defaultSettings.clone();
         } catch (FileNotFoundException e) {
@@ -113,7 +114,7 @@ public final class Configurator {
     public static void saveCurrentSettings(){
         try {
             @Cleanup
-            FileOutputStream out = new FileOutputStream("program.properties");
+            FileOutputStream out = new FileOutputStream("application.properties");
             currentSettings.store(out, "Ustawienia programu");
         } catch (FileNotFoundException e) {
             logger.log(Level.WARNING,"Nie znaleziono pliku konfiguracyjnego przy probie zapisu");
@@ -123,6 +124,7 @@ public final class Configurator {
     }
     public void addProperty(String key, String value){
         currentSettings.setProperty(key, value);
+        logger.log(Level.CONFIG, "application.properties dodano  " + key + ":" + value);
     }
     
     public static Boolean isUsingDefaultConfiguration(){
