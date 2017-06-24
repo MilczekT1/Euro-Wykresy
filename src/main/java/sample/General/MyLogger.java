@@ -19,7 +19,8 @@ public class MyLogger {
             public synchronized String format(LogRecord record) {
                 return LocalDateTime.now().toString() + " " +
                                record.getLevel() + ":" +
-                               record.getMessage() +"\n";
+                               record.getMessage() + "\n" +
+                               "-------------------------------------------------------------------------------------------\n";
             }
         };
         
