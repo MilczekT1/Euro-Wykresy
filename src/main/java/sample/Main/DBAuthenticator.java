@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -38,19 +39,19 @@ public final class DBAuthenticator {
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
         } catch (InstantiationException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (IllegalAccessException e) {
             MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (ClassNotFoundException e) {
             MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
             System.exit(1);
         }
         try {
             createTablesIfNotExists();
         } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
         }
     }
     private void createTablesIfNotExists() throws SQLException {
@@ -59,19 +60,30 @@ public final class DBAuthenticator {
         try {
             Path path = Paths.get("src/main/resources/", "Create_Users.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
-            //TODO: batch
-            String query = "";
+            List<String> queries = new LinkedList<>();
+    
+            String foundQuery = "";
             for (String line : lines){
-                query += line;
+                foundQuery += line;
                 if (line.endsWith(";")){
-                    statement.execute(query);
-                    query = "";
+                    queries.add(foundQuery);
+                    foundQuery = "";
                 }
             }
+            for (String fromFileQuery: queries)
+                executeCreateIfNotExists(fromFileQuery, statement);
+            
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Create_Users.sql");
         } catch(IOException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU Create_Users.sql");
+        }
+    }
+    private void executeCreateIfNotExists(String query, Statement statement){
+        try {
+            statement.execute(query);
+        } catch (SQLException e) {
+            // One of the scripts from "Create_Groups.sql" failed (because exists)
         }
     }
     
@@ -94,7 +106,7 @@ public final class DBAuthenticator {
             }
             
         } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.INFO,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.INFO,Throwables.getStackTraceAsString(e).trim());
             return false;
         }
     }
@@ -119,7 +131,7 @@ public final class DBAuthenticator {
                 return true;
             }
         } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
             return false;
         }
     }
@@ -129,9 +141,9 @@ public final class DBAuthenticator {
             byte[] hashArray = digest.digest(password.getBytes("UTF-8"));
             return DatatypeConverter.printHexBinary(hashArray);
         } catch (NoSuchAlgorithmException e) {
-            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
         } catch (UnsupportedEncodingException e) {
-            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e));
+            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
         }
         return null;
     }
