@@ -16,8 +16,8 @@ public final class Main extends Application {
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
         primaryStage.setOnCloseRequest(e -> {
-            System.exit(0);
             Configurator.saveCurrentSettings();
+            System.exit(0);
         });
     }
     
