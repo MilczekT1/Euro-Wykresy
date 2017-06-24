@@ -32,11 +32,11 @@ final class DBGroupManager {
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
             System.exit(1);
@@ -45,33 +45,39 @@ final class DBGroupManager {
         try {
             createTablesIfNotExists();
         } catch (SQLException e) {
-            //TODO: po dodaniu batchy, zmienic
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
     private void createTablesIfNotExists() throws SQLException {
         @Cleanup
         Statement statement = connection.createStatement();
-        
         try {
             Path path = Paths.get("src/main/resources/", "Create_Groups.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
-            //TODO: dodaj batcha by jeden error nie gubil reszty, potem zmien obsluge wyjatku w creattablesifnoteist
-            //List<String> queries = new LinkedList<>();
+            List<String> queries = new LinkedList<>();
             
-            String query = "";
+            String foundQuery = "";
             for (String line : lines){
-                query += line;
+                foundQuery += line;
                 if (line.endsWith(";")){
-                    
-                    statement.execute(query);
-                    query = "";
+                    queries.add(foundQuery);
+                    foundQuery = "";
                 }
             }
+            for (String fromFileQuery: queries)
+                executeCreateIfNotExists(fromFileQuery, statement);
+            
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Create_Groups.sql");
         } catch(IOException e) {
-            e.printStackTrace();
+            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU Create_Groups.sql");
+        }
+    }
+    private void executeCreateIfNotExists(String query, Statement statement){
+        try {
+            statement.execute(query);
+        } catch (SQLException e) {
+            // One of the scripts from "Create_Groups.sql" failed (because exists)
         }
     }
     
