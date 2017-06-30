@@ -3,7 +3,6 @@ package sample.Main;
 import com.google.common.base.Throwables;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.general.SeriesException;
 import org.jfree.data.time.*;
 import org.jfree.data.xy.XYDataset;
 import sample.General.Configurator;
@@ -14,10 +13,10 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.logging.Level;
 
-public class Chart {
+class Chart {
     
-    @Deprecated
     public static XYDataset createDefaultDataset( ) {
+        /*
         TimeSeries series = new TimeSeries( "Random Data" );
         Second current = new Second();
         double value = 100.0;
@@ -31,6 +30,8 @@ public class Chart {
                 System.err.println("Error adding to series");
             }
         }
+        */
+        TimeSeries series = new TimeSeries("default");
         return new TimeSeriesCollection(series);
     }
     public static XYDataset putGateValues(CachedRowSet crs){
@@ -48,9 +49,7 @@ public class Chart {
     }
     
     public static JFreeChart createChart(XYDataset dataset,String title, String measureType) {
-        JFreeChart timeChart = ChartFactory.createTimeSeriesChart(title,"Czas", measureType,dataset,false,false,false);
-        
-        return timeChart;
+        return ChartFactory.createTimeSeriesChart(title,"Czas", measureType,dataset,false,false,false);
     }
     
     public static CachedRowSet importGateValues(String gateId, long start, long end){
