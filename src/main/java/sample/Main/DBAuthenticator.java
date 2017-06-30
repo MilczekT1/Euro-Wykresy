@@ -29,24 +29,14 @@ final class DBAuthenticator {
     private static Connection connection;
     private static DBAuthenticator instance = new DBAuthenticator();
     
-    public static DBAuthenticator getInstance(){
-        return instance;
-    }
-    
     private DBAuthenticator(){
         try {
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException | SQLException | ClassNotFoundException e) {
             MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-        } catch (IllegalAccessException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-        } catch (ClassNotFoundException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-            System.exit(1);
         }
+        
         try {
             createTablesIfNotExists();
         } catch (SQLException e) {
@@ -61,12 +51,12 @@ final class DBAuthenticator {
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
             List<String> queries = new LinkedList<>();
     
-            String foundQuery = "";
+            StringBuilder foundQuery = new StringBuilder();
             for (String line : lines){
-                foundQuery += line;
+                foundQuery.append(line);
                 if (line.endsWith(";")){
-                    queries.add(foundQuery);
-                    foundQuery = "";
+                    queries.add(foundQuery.toString());
+                    foundQuery = new StringBuilder();
                 }
             }
             for (String fromFileQuery: queries)
@@ -139,9 +129,7 @@ final class DBAuthenticator {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashArray = digest.digest(password.getBytes("UTF-8"));
             return DatatypeConverter.printHexBinary(hashArray);
-        } catch (NoSuchAlgorithmException e) {
-            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
-        } catch (UnsupportedEncodingException e) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
         }
         return null;
