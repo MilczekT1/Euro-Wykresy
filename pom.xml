@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>groupId</groupId>
-    <artifactId>GroupsFX</artifactId>
+    <artifactId>Euro Wykresy</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <build>
@@ -41,7 +41,17 @@
             <artifactId>guava</artifactId>
             <version>22.0</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.jfree/jcommon -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.23</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jfoenix</groupId>
+            <artifactId>jfoenix</artifactId>
+            <version>1.4.0</version>
+        </dependency>
     </dependencies>
     
 </project>

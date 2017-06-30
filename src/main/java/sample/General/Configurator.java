@@ -35,43 +35,31 @@ public final class Configurator {
         String user = null;
         String password = null;
         Optional<String> result;
-    
-        TextInputDialog adressDialog = new TextInputDialog("Konfiguracja polaczenia");
-        adressDialog.setTitle("Konfiguracja polaczenia");
-        adressDialog.setHeaderText("Krok 1/3: IP + port");
-        result = adressDialog.showAndWait();
-        if (result.isPresent()) {
+        
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 1/3: IP + port");
+        if (result.isPresent())
             adress = result.get();
-        }
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono adresu ip i/lub portu");
             System.exit(1);
         }
         
-        TextInputDialog userDialog = new TextInputDialog("Konfiguracja polaczenia");
-        userDialog.setTitle("Konfiguracja polaczenia");
-        userDialog.setHeaderText("Krok 2/3: Nazwa użytkownika");
-        result = userDialog.showAndWait();
-        if (result.isPresent()) {
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 2/3: Nazwa użytkownika");
+        if (result.isPresent())
             user = result.get();
-        }
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono nazwy uzytkownika BD");
             System.exit(1);
         }
-        
-        TextInputDialog passwordDialog = new TextInputDialog("Konfiguracja polaczenia");
-        passwordDialog.setTitle("Konfiguracja polaczenia");
-        passwordDialog.setHeaderText("Krok 3/3: Haslo");
-        result = passwordDialog.showAndWait();
-        if (result.isPresent()) {
+    
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia", "Krok 3/3: Haslo");
+        if (result.isPresent())
             password = result.get();
-        }
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono hasla");
             System.exit(1);
         }
-    
+        //TODO:Max-Gates_Amount:
         Properties defSettings = new Properties();
         defSettings.setProperty("Server-Adress",adress);
         defSettings.setProperty("User", user);
@@ -86,7 +74,7 @@ public final class Configurator {
             currentSettings.store(out, "Ustawienia programu");
             logger.log(Level.CONFIG, "Pomyslnie dodano konfiguracje programu");
         } catch (FileNotFoundException e) {
-            logger.log(Level.SEVERE,"Nie znaleziono pliku konfiguracyjnego (prawdopodobnie usuniety recznie)");
+            logger.log(Level.SEVERE,"Nie znaleziono pliku konfiguracyjnego");
             System.exit(1);
         } catch (IOException e) {
             logger.log(Level.SEVERE,"Nieudana proba zapisania pliku konfiguracyjnego");

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 final class DBAuthenticator {
-    private static Configurator config = Configurator.getInstance();
     private static final String DB = "jdbc:sqlserver://"
                                              + Configurator.getCurrentSettings().getProperty("Server-Adress");
     private static final String USER = Configurator.getCurrentSettings().getProperty("User");
