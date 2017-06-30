@@ -2,7 +2,7 @@ package sample.Main;
 
 import javafx.beans.property.SimpleStringProperty;
 
-public final class GroupGate {
+final class GroupGate {
     private final SimpleStringProperty description;
     private final SimpleStringProperty gateId;
     private final SimpleStringProperty groupId;
