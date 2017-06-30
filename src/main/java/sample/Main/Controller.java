@@ -13,7 +13,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
-import javafx.util.Callback;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.data.xy.XYDataset;
@@ -33,9 +32,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-public class Controller implements Initializable {
+public final class Controller implements Initializable {
     private static Controller instance;
-    protected static Controller getInstance() {
+    static Controller getInstance() {
         return instance;
     }
     private static ExecutorService executorService = ThreadPool.getInstance();
@@ -61,11 +60,11 @@ public class Controller implements Initializable {
     @FXML private AnchorPane bottomChartPane;
     private JFreeChart analogChart;
     private JFreeChart digitalChart;
-    protected ChartViewer topChartViewer;
-    protected ChartViewer bottomChartViewer;
+    private ChartViewer topChartViewer;
+    private ChartViewer bottomChartViewer;
     
-    protected XYDataset xyAnalogDataset;
-    protected XYDataset xyDigitalDataset;
+    private XYDataset xyAnalogDataset;
+    private XYDataset xyDigitalDataset;
     
     public void importChartData() {
         //LocalDate startDate = startDatePicker.getValue();
@@ -111,7 +110,6 @@ public class Controller implements Initializable {
     
     //-------------------------------------------------------------------LOGIN
     private static Integer accessLevel;
-    @FXML private TitledPane registerPane;
     @FXML private TextField login_Login;
     @FXML private TextField login_Password;
     @FXML private Label login_Label;
@@ -137,7 +135,6 @@ public class Controller implements Initializable {
                 groupsTab.setDisable(true);
                 configPane.setDisable(true);
             }
-            registerPane.setDisable(true);
         } else {
             login_Label.setText("Nieudane logowanie");
         }
@@ -200,14 +197,10 @@ public class Controller implements Initializable {
             handleMouseClicked_OnEditChecker();
             //TODO: sprawdzic, jesli uda sie wywolac, to metode wrzuci sie do initListeners
             //editGroupChecker.getOnMouseClicked();
-        } catch (GuiAccessException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-        } catch (SQLException e) {
-            // Communication error or tried to insert group with existing name.
+        } catch (GuiAccessException | SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
-    
     private String getNewGroupName() throws GuiAccessException {
         if (newGroupTextField.isDisabled())
             if (comboMenuEdit.getSelectionModel().getSelectedItem() != null) {
@@ -236,7 +229,6 @@ public class Controller implements Initializable {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
     }
-    
     public void handleMouseClicked_OnAddChecker() {
         if (addGroupChecker.isSelected()) {
             if (editGroupChecker.isSelected()) {
@@ -255,7 +247,6 @@ public class Controller implements Initializable {
             }
         }
     }
-    
     public void handleMouseClicked_OnEditChecker() {
         if (editGroupChecker.isSelected()) {
             if (addGroupChecker.isSelected()) {
@@ -320,22 +311,21 @@ public class Controller implements Initializable {
         
         remainingGateDescription = new TableColumn<>("Description");
         remainingShortDescription = new TableColumn("ShortDescription");
-        ;
         remainingGateType = new TableColumn("GateType");
         remainingGateMeasureType = new TableColumn("MeasureType");
         remainingGateId = new TableColumn<>("GateId");
         
-        currentGateDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("Description"));
-        currentGateId.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateId"));
-        currentGateMeasureType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("MeasureType"));
-        currentGateType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateType"));
-        currentShortDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("ShortDescription"));
+        currentGateDescription.setCellValueFactory(new PropertyValueFactory<>("Description"));
+        currentGateId.setCellValueFactory(new PropertyValueFactory<>("GateId"));
+        currentGateMeasureType.setCellValueFactory(new PropertyValueFactory<>("MeasureType"));
+        currentGateType.setCellValueFactory(new PropertyValueFactory<>("GateType"));
+        currentShortDescription.setCellValueFactory(new PropertyValueFactory<>("ShortDescription"));
         
-        remainingGateDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("Description"));
-        remainingGateId.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateId"));
-        remainingGateMeasureType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("MeasureType"));
-        remainingGateType.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("GateType"));
-        remainingShortDescription.setCellValueFactory(new PropertyValueFactory<GroupGate, String>("ShortDescription"));
+        remainingGateDescription.setCellValueFactory(new PropertyValueFactory<>("Description"));
+        remainingGateId.setCellValueFactory(new PropertyValueFactory<>("GateId"));
+        remainingGateMeasureType.setCellValueFactory(new PropertyValueFactory<>("MeasureType"));
+        remainingGateType.setCellValueFactory(new PropertyValueFactory<>("GateType"));
+        remainingShortDescription.setCellValueFactory(new PropertyValueFactory<>("ShortDescription"));
         
         tableWithCurrentGates.getColumns().addAll(currentShortDescription, currentGateDescription, currentGateType, currentGateMeasureType, currentGateId);
         tableWithRemainingGates.getColumns().addAll(remainingShortDescription, remainingGateDescription, remainingGateType, remainingGateMeasureType, remainingGateId);
@@ -344,40 +334,34 @@ public class Controller implements Initializable {
     }
     
     private void initListeners() {
-        tableWithRemainingGates.setRowFactory(new Callback<TableView<GroupGate>, TableRow<GroupGate>>() {
-            @Override
-            public TableRow<GroupGate> call(TableView<GroupGate> tableView) {
-                final TableRow<GroupGate> row = new TableRow<>();
-                final ContextMenu contextMenu = new ContextMenu();
-                final MenuItem removeMenuItem = new MenuItem("Dodaj do grupy");
-                contextMenu.getItems().add(removeMenuItem);
-                removeMenuItem.setOnAction((e) -> {
-                    GroupGate lastAddedGroupGate = tableWithRemainingGates.getItems().get(row.getIndex());
-                    tableWithCurrentGates.getItems().add(lastAddedGroupGate);
-                    tableWithRemainingGates.getItems().remove(row.getItem());
-                });
-                // Set context menu on row, but use a binding to make it only show for non-empty rows:
-                row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
-                return row;
-            }
+        tableWithRemainingGates.setRowFactory(tableView -> {
+            final TableRow<GroupGate> row = new TableRow<>();
+            final ContextMenu contextMenu = new ContextMenu();
+            final MenuItem removeMenuItem = new MenuItem("Dodaj do grupy");
+            contextMenu.getItems().add(removeMenuItem);
+            removeMenuItem.setOnAction((e) -> {
+                GroupGate lastAddedGroupGate = tableWithRemainingGates.getItems().get(row.getIndex());
+                tableWithCurrentGates.getItems().add(lastAddedGroupGate);
+                tableWithRemainingGates.getItems().remove(row.getItem());
+            });
+            // Set context menu on row, but use a binding to make it only show for non-empty rows:
+            row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
+            return row;
         });
-        tableWithCurrentGates.setRowFactory(new Callback<TableView<GroupGate>, TableRow<GroupGate>>() {
-            @Override
-            public TableRow<GroupGate> call(TableView<GroupGate> tableView) {
-                final TableRow<GroupGate> row = new TableRow<>();
-                final ContextMenu contextMenu = new ContextMenu();
-                final MenuItem removeMenuItem = new MenuItem("Usuń z grupy");
-                contextMenu.getItems().add(removeMenuItem);
-                removeMenuItem.setOnAction((e) -> {
-                    GroupGate lastRemovedGroupGate = tableWithCurrentGates.getItems().get(row.getIndex());
-                    tableWithRemainingGates.getItems().add(lastRemovedGroupGate);
-                    tableWithCurrentGates.getItems().remove(row.getItem());
-                    tableWithCurrentGates.sort();
-                });
-                // Set context menu on row, but use a binding to make it only show for non-empty rows:
-                row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
-                return row;
-            }
+        tableWithCurrentGates.setRowFactory(tableView -> {
+            final TableRow<GroupGate> row = new TableRow<>();
+            final ContextMenu contextMenu = new ContextMenu();
+            final MenuItem removeMenuItem = new MenuItem("Usuń z grupy");
+            contextMenu.getItems().add(removeMenuItem);
+            removeMenuItem.setOnAction((e) -> {
+                GroupGate lastRemovedGroupGate = tableWithCurrentGates.getItems().get(row.getIndex());
+                tableWithRemainingGates.getItems().add(lastRemovedGroupGate);
+                tableWithCurrentGates.getItems().remove(row.getItem());
+                tableWithCurrentGates.sort();
+            });
+            // Set context menu on row, but use a binding to make it only show for non-empty rows:
+            row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
+            return row;
         });
         
         groupsTab.setOnSelectionChanged((e) -> {
@@ -405,16 +389,14 @@ public class Controller implements Initializable {
                     tableWithCurrentGates.getItems().clear();
                 }
             } catch (GuiAccessException e1) {
-                //TODO: log it
-                e1.printStackTrace();
+                MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e1).trim());
             }
         });
         newGroupTextField.setOnKeyReleased((e) -> {
             try {
                 dataContainer.setCurrentGroupName(getNewGroupName());
             } catch (GuiAccessException e1) {
-                //TODO: log it
-                e1.printStackTrace();
+                MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e1).trim());
             }
         });
         comboChooseGroup.setOnAction((e) -> {
@@ -422,7 +404,7 @@ public class Controller implements Initializable {
             gatesOnChartList.clear();
             
             dataContainer.setChartGroupGates(DBGroupManager.dbGetAllGatesFromGroup(comboChooseGroup.getSelectionModel().getSelectedItem().toString()));
-            dataContainer.getAllChartData().clear();
+            GuiDataContainer.getAllChartData().clear();
             LinkedList<String> groupGatesNames = new LinkedList<>();
             for (GroupGate gate : dataContainer.getChartGroupGates()) {
                 groupGatesNames.add(gate.getDescription());
@@ -446,20 +428,17 @@ public class Controller implements Initializable {
                 String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
                 for (GateData gateData : GuiDataContainer.getAllChartData()) {
                     if (gateData.getGateId().equals(gateId)) {
+                        //TODO: wrzucic dane na wykres na podstawie gateId
                         xyAnalogDataset = Chart.putGateValues(gateData.getValues());
                         //analogChart = Chart.createChart(xyAnalogDataset, "analog", "lol"/*TODO!*/);
                         analogChart.getXYPlot().setDataset(xyAnalogDataset);
                         //analogChart = Chart.createChart(xyAnalogDataset,"analog", "cisnienie");
                         //topChartViewer.setChart(analogChart);
-                        
-                        
-                        
+    
                         break;
                     }
                 }
-                //TODO: wrzucic dane na wykres na podstawie gateId
                 
-    
                 addComboBoxOptionsFromList(comboOnChartGates, gatesOnChartList, newList);
                 comboNotOnChartGates.getItems().remove(selectedGateToAdd);
                 comboNotOnChartGates.getSelectionModel().clearSelection();
@@ -482,17 +461,15 @@ public class Controller implements Initializable {
     
     private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String> newOptions) {
         list.addAll(newOptions);
-        list.sort((o1, o2) -> o1.compareTo(o2));
+        list.sort(Comparator.naturalOrder());
         box.setItems(list);
     }
     
     public synchronized void changeProgress() {
         double oldProgress = progressBar.getProgress();
-        double newProgress = oldProgress + 1 / Double.valueOf(GuiDataContainer.getInstance().getChartGroupGates().size());
+        double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
+        double newProgress = (oldProgress + 1 / denominator);
         progressBar.setProgress(newProgress);
         progressIndicator.setProgress(newProgress);
-        if (newProgress == 1) {
-            loadDataButton.setDisable(true);
-        }
     }
 }
