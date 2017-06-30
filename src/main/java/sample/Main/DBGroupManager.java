@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 final class DBGroupManager {
-    private static Configurator config = Configurator.getInstance();
     private static final String DB = "jdbc:sqlserver://"
                                              + Configurator.getCurrentSettings().getProperty("Server-Adress");
     private static final String USER = Configurator.getCurrentSettings().getProperty("User");
@@ -31,11 +30,7 @@ final class DBGroupManager {
         try {
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
-        } catch (InstantiationException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-        } catch (IllegalAccessException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-        } catch (ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
@@ -56,12 +51,12 @@ final class DBGroupManager {
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
             List<String> queries = new LinkedList<>();
             
-            String foundQuery = "";
+            StringBuilder foundQuery = new StringBuilder();
             for (String line : lines){
-                foundQuery += line;
+                foundQuery.append(line);
                 if (line.endsWith(";")){
-                    queries.add(foundQuery);
-                    foundQuery = "";
+                    queries.add(foundQuery.toString());
+                    foundQuery = new StringBuilder();
                 }
             }
             for (String fromFileQuery: queries)
@@ -81,7 +76,7 @@ final class DBGroupManager {
         }
     }
     
-    protected static List<String> dbGetAllExistingGroupNames(){
+    static List dbGetAllExistingGroupNames(){
         try {
             @Cleanup
             Statement statement = connection.createStatement();
@@ -97,7 +92,7 @@ final class DBGroupManager {
         }
         return Collections.EMPTY_LIST;
     }
-    protected static LinkedList<GroupGate> dbGetAllGatesFromGroup(String groupName){
+    static LinkedList<GroupGate> dbGetAllGatesFromGroup(String groupName){
         try {
             String getGroupIdSQL = "USE wizualizacja2; SELECT Id_grupy FROM KONRAD_GRUPY WHERE Nazwa = ?;";
             @Cleanup
@@ -132,7 +127,7 @@ final class DBGroupManager {
         }
         return null;
     }
-    protected static LinkedList<GroupGate> dbGetAllGates(){
+    static LinkedList<GroupGate> dbGetAllGates(){
         try {
             String sql = "USE wizualizacja2 " +
                                  "SELECT gateId " +
@@ -160,10 +155,10 @@ final class DBGroupManager {
             return groupGates;
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            throw new NullPointerException("Nieudana proba poboru bazy slownika");
         }
-        return null;
     }
-    protected static String dbGetGroupIdUsingGroupName(String groupName){
+    static String dbGetGroupIdUsingGroupName(String groupName){
         try {
             String sql = "USE wizualizacja2; SELECT Id_Grupy FROM Konrad_GRUPY WHERE Nazwa = ?;";
             @Cleanup
@@ -213,7 +208,7 @@ final class DBGroupManager {
         }
         return null;
     }
-    protected static boolean dbAddGroup(String groupName)throws SQLException{
+    static void dbAddGroup(String groupName)throws SQLException{
     
         String findGroupSQL = "USE wizualizacja2;" +
                                       "SELECT Nazwa FROM KONRAD_GRUPY WHERE Nazwa = ?";
@@ -230,10 +225,9 @@ final class DBGroupManager {
             preparedStatement = connection.prepareStatement(insertGroupSQL);
             preparedStatement.setString(1,groupName);
             preparedStatement.executeUpdate();
-            return true;
         }
     }
-    protected static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId){
+    static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId){
         String findSQL = "USE wizualizacja2;" +
                                    "SELECT * FROM Slownik WHERE gateId=?";
         String insertSQL = "USE wizualizacja2;" +
