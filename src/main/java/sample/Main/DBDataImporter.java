@@ -4,10 +4,9 @@ import javax.sql.rowset.CachedRowSet;
 
 final class DBDataImporter extends Thread {
     
-    private CachedRowSet rows;
-    private String gateId;
-    private long start;
-    private long end;
+    private final String gateId;
+    private final long start;
+    private final long end;
     
     public DBDataImporter(String gateId, long start, long end) {
         super("DataImporter");
@@ -18,7 +17,7 @@ final class DBDataImporter extends Thread {
     
     @Override
     public void run() {
-        rows = Chart.importGateValues(gateId,start,end);
+        CachedRowSet rows = Chart.importGateValues(gateId,start,end);
         synchronized (GuiDataContainer.getAllChartData()){
             GuiDataContainer.getAllChartData().add(new GateData(gateId,rows));
         }
