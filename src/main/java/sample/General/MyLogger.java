@@ -10,9 +10,6 @@ public class MyLogger {
     private static Logger logger;
     private static FileHandler fileHandler;
     
-    public static MyLogger getInstance(){
-        return instance;
-    }
     private MyLogger() {
         SimpleFormatter simpleFormatter = new SimpleFormatter(){
             @Override
@@ -46,7 +43,7 @@ public class MyLogger {
         }
         logger.addHandler(fileHandler);
     }
-    public void setOrChangeFormatter(SimpleFormatter newSimpleFormatter){
+    private void setOrChangeFormatter(SimpleFormatter newSimpleFormatter){
         fileHandler.setFormatter(newSimpleFormatter);
     }
     
