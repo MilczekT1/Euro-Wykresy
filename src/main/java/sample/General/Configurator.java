@@ -1,6 +1,5 @@
 package sample.General;
 
-import javafx.scene.control.TextInputDialog;
 import lombok.Cleanup;
 
 import java.io.*;
@@ -8,6 +7,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public final class Configurator {
     
@@ -16,10 +16,6 @@ public final class Configurator {
     private static Properties currentSettings;
     private static Properties defaultSettings;
     private static Boolean usingDefaultConfiguration;
-    
-    public static Configurator getInstance(){
-        return instance;
-    }
     
     private Configurator(){
         File propertiesFile = new File("application.properties");
@@ -34,6 +30,7 @@ public final class Configurator {
         String adress = null;
         String user = null;
         String password = null;
+        String maxGatesAmount = null;
         Optional<String> result;
         
         result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 1/3: IP + port");
@@ -59,11 +56,24 @@ public final class Configurator {
             logger.log(Level.CONFIG, "Nie wprowadzono hasla");
             System.exit(1);
         }
-        //TODO:Max-Gates_Amount:
+        result = Utils.getStringFromDialog("Wydajnosc", "Wydajnosc", "Maksymalna liczba bramek na wykresie (1-19), zalecana <=15:");
+        if (result.isPresent()) {
+            maxGatesAmount = result.get();
+            if (!Pattern.matches("[1-9]|1[0-9]", maxGatesAmount)) {
+                logger.log(Level.CONFIG, "Nie wprowadzono poprawnej liczby  bramek");
+                System.exit(1);
+            }
+        }
+        else {
+            logger.log(Level.CONFIG, "Nie wprowadzono hasla");
+            System.exit(1);
+        }
+        
         Properties defSettings = new Properties();
         defSettings.setProperty("Server-Adress",adress);
         defSettings.setProperty("User", user);
         defSettings.setProperty("Password", password);
+        defSettings.setProperty("Max_Gates_Amount",maxGatesAmount);
         usingDefaultConfiguration = false;
         
         try {
@@ -81,7 +91,7 @@ public final class Configurator {
             System.exit(1);
         }
     }
-    public static void importDefaultSettings(){
+    private static void importDefaultSettings(){
         try {
             usingDefaultConfiguration = true;
             defaultSettings = new Properties();
@@ -110,14 +120,13 @@ public final class Configurator {
             logger.log(Level.WARNING,"Nieudana proba zapisu pliku konfiguracyjnego");
         }
     }
-    public void addProperty(String key, String value){
-        currentSettings.setProperty(key, value);
-        logger.log(Level.CONFIG, "application.properties dodano  " + key + ":" + value);
-    }
+// --Commented out by Inspection START (30/06/2017, 18:11):
+//    public void addProperty(String key, String value){
+//        currentSettings.setProperty(key, value);
+//        logger.log(Level.CONFIG, "application.properties dodano  " + key + ":" + value);
+//    }
+// --Commented out by Inspection STOP (30/06/2017, 18:11)
     
-    public static Boolean isUsingDefaultConfiguration(){
-        return usingDefaultConfiguration ? true : false;
-    }
     public static Properties getDefaultSettings(){
         return defaultSettings;
     }
