@@ -1,10 +1,7 @@
 package sample.Main;
 
 import com.google.common.base.Throwables;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXDatePicker;
-import com.jfoenix.controls.JFXProgressBar;
-import com.jfoenix.controls.JFXTimePicker;
+import com.jfoenix.controls.*;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Paint;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.data.xy.XYDataset;
@@ -41,10 +39,11 @@ public final class Controller implements Initializable {
     
     //-------------------------------------------------------------------TABS
     @FXML private Tab groupsTab;
+    @FXML private Tab chartsTab;
     //-------------------------------------------------------------------CHARTS
-    @FXML private ComboBox comboChooseGroup;
-    @FXML private ComboBox comboOnChartGates;
-    @FXML private ComboBox comboNotOnChartGates;
+    @FXML private JFXComboBox comboChooseGroup;
+    @FXML private JFXComboBox comboOnChartGates;
+    @FXML private JFXComboBox comboNotOnChartGates;
     private ObservableList<String> listToChoose;
     private ObservableList<String> gatesOnChartList;
     private ObservableList<String> gatesNotOnChartList;
@@ -72,14 +71,20 @@ public final class Controller implements Initializable {
         LocalDate startDate = LocalDate.of(2017,1,1);
         LocalTime startTime = LocalTime.of(1,0);
         Timestamp startPoint = Timestamp.valueOf(LocalDateTime.of(startDate, startTime));
-        System.out.println(startPoint.getTime());
         
         //LocalDate endDate = endDatePicker.getValue();
         //LocalTime endTime = endTimePicker.getValue();
-        LocalDate endDate = LocalDate.of(2017,4,1);
+        LocalDate endDate = LocalDate.of(2017,4,3);
         LocalTime endTime = LocalTime.of(1,0);
         Timestamp endPoint = Timestamp.valueOf(LocalDateTime.of(endDate, endTime));
-        System.out.println(endPoint.getTime());
+        //TODO:sprawdz
+        /*
+        if (startDate.isAfter(endDate)) {
+            JOptionPane.showMessageDialog(null,"Punkt początkowy jest później niż końcowy");
+            return;
+        }
+        */
+        comboChooseGroup.setDisable(true);
         
         LinkedList<DBDataImporter> importers = new LinkedList<>();
         for (int i = 0; i < dataContainer.chartGroupGates.size(); i++) {
@@ -100,6 +105,7 @@ public final class Controller implements Initializable {
                     MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
                 }
             }
+            comboChooseGroup.setDisable(false);
             comboNotOnChartGates.setDisable(false);
             comboOnChartGates.setDisable(false);
         });
@@ -107,57 +113,65 @@ public final class Controller implements Initializable {
         loadDataButton.setDisable(true);
         //System.out.println(new Timestamp(1485979049614L).toLocalDateTime().toString());
     }
-    
     //-------------------------------------------------------------------LOGIN
     private static Integer accessLevel;
-    @FXML private TextField login_Login;
-    @FXML private TextField login_Password;
+    @FXML private JFXTextField login_Login;
+    @FXML private JFXPasswordField login_Password;
     @FXML private Label login_Label;
+    @FXML private Label loggedUser_Label;
     
-    @FXML private TextField register_Login;
-    @FXML private TextField register_Password;
-    @FXML private TextField register_RepeatedPassword;
+    @FXML private JFXTextField register_Login;
+    @FXML private JFXPasswordField register_Password;
+    @FXML private JFXPasswordField register_RepeatedPassword;
     @FXML private Label register_Label;
-    
-    @FXML private TitledPane configPane;
-    
+    @FXML
     public void loginUser() {
         String login = login_Login.getText();
         String password = login_Password.getText();
         login_Label.setText("");
         if (DBAuthenticator.tryToLoginAndReturnAccessType(login, DBAuthenticator.hashPassword(password), dataContainer)) {
             accessLevel = dataContainer.getAccessLevel();
+            login_Label.setTextFill(Paint.valueOf("green"));
             login_Label.setText("Udane logowanie");
             if (accessLevel.equals(1)) {
                 groupsTab.setDisable(false);
-                configPane.setDisable(false);
             } else {
                 groupsTab.setDisable(true);
-                configPane.setDisable(true);
             }
+            chartsTab.setDisable(false);
+            loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
+            login_Login.clear();
+            login_Password.clear();
         } else {
+            login_Label.setTextFill(Paint.valueOf("red"));
             login_Label.setText("Nieudane logowanie");
+            login_Password.clear();
         }
     }
-    
+    @FXML
     public void registerUser() {
         String login = register_Login.getText();
         String password = register_Password.getText();
         String repeatedPassword = register_RepeatedPassword.getText();
         register_Label.setText("");
-        if (password.equals(repeatedPassword) && Pattern.matches("(\\w)+_(\\w)", login) && // Name_LastName
+        if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) && // Name_LastName
                     Pattern.matches("^\\S{6,100}", password)) {
             if (DBAuthenticator.tryToRegister(login, DBAuthenticator.hashPassword(password))) {
                 register_Label.setDisable(false);
-                register_Label.setText("udana rejestracja");
+                register_Label.setTextFill(Paint.valueOf("green"));
+                register_Label.setText("Udana rejestracja");
             } else {
                 register_Label.setDisable(false);
+                register_Label.setTextFill(Paint.valueOf("red"));
                 register_Label.setText("Nieudana próba rejestracji");
             }
         } else {
             register_Label.setDisable(false);
+            register_Label.setTextFill(Paint.valueOf("red"));
             register_Label.setText("Nieprawidlowe dane!!");
         }
+        register_Password.clear();
+        register_RepeatedPassword.clear();
     }
     
     //-------------------------------------------------------------------GROUP MANAGER (RIGHT)
@@ -177,30 +191,17 @@ public final class Controller implements Initializable {
     //-------------------------------------------------------------------GROUP MANAGER (LEFT)
     @FXML private CheckBox addGroupChecker;
     @FXML private CheckBox editGroupChecker;
-    @FXML private TextField newGroupTextField;
-    @FXML private ComboBox comboMenuEdit;
+    @FXML private JFXTextField newGroupTextField;
+    @FXML private JFXButton addGroupButton;
+    @FXML private JFXButton deleteGroupButton;
+    @FXML private JFXComboBox comboGroupToDelete;
+    @FXML private JFXButton confirmChangesButton;
+    @FXML private JFXComboBox comboMenuEdit;
     private ObservableList<String> listToEdit;
-    //-------------------------------------------------------------------GROUPS
+    //-------------------------------------------------------------------
+    
     private GuiDataContainer dataContainer;
     
-    public void addGroup() {
-        try {
-            String groupName = getNewGroupName();
-            DBGroupManager.dbAddGroup(groupName);
-    
-            // fix GUI after not user-driven changes
-            comboMenuEdit.getSelectionModel().clearSelection();
-            listToEdit.clear();
-            addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
-            //simulate enabling "Edycja" with mouse
-            editGroupChecker.setSelected(true);
-            handleMouseClicked_OnEditChecker();
-            //TODO: sprawdzic, jesli uda sie wywolac, to metode wrzuci sie do initListeners
-            //editGroupChecker.getOnMouseClicked();
-        } catch (GuiAccessException | SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-        }
-    }
     private String getNewGroupName() throws GuiAccessException {
         if (newGroupTextField.isDisabled())
             if (comboMenuEdit.getSelectionModel().getSelectedItem() != null) {
@@ -217,27 +218,23 @@ public final class Controller implements Initializable {
         }
     }
     
-    //TODO: zainicjowac te metody w initialize
-    public void handleMouseClicked_ConfirmChanges() {
-        try {
-            dataContainer.setGroupId(DBGroupManager.dbGetGroupIdUsingGroupName(getNewGroupName()));
-            for (GroupGate groupGate : tableWithCurrentGates.getItems()) {
-                // groupGate does not always contain groupId -> use dataContainer
-                DBGroupManager.dbInsertCurrentGatesIntoGroup(groupGate.getGateId(), dataContainer.getGroupId());
-            }
-        } catch (GuiAccessException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-        }
-    }
     public void handleMouseClicked_OnAddChecker() {
         if (addGroupChecker.isSelected()) {
             if (editGroupChecker.isSelected()) {
                 editGroupChecker.setSelected(false);
             }
             newGroupTextField.setDisable(false);
+            addGroupButton.setDisable(false);
+            comboGroupToDelete.setDisable(false);
+            comboGroupToDelete.getSelectionModel().clearSelection();
+            deleteGroupButton.setDisable(false);
+            
             comboMenuEdit.setDisable(true);
             comboMenuEdit.getSelectionModel().clearSelection();
+            confirmChangesButton.setDisable(true);
+            
             tableWithCurrentGates.getItems().clear();
+            
         } else {
             if (!editGroupChecker.isSelected()) {
                 addGroupChecker.setSelected(true);
@@ -254,8 +251,13 @@ public final class Controller implements Initializable {
             }
             comboMenuEdit.setDisable(false);
             comboMenuEdit.getSelectionModel().clearSelection();
+            confirmChangesButton.setDisable(false);
+            
             newGroupTextField.setDisable(true);
             newGroupTextField.setText("");
+            addGroupButton.setDisable(true);
+            comboGroupToDelete.setDisable(true);
+            deleteGroupButton.setDisable(true);
         } else {
             if (!addGroupChecker.isSelected()) {
                 editGroupChecker.setSelected(true);
@@ -269,8 +271,15 @@ public final class Controller implements Initializable {
         listToEdit = FXCollections.observableArrayList();
         listToChoose = FXCollections.observableArrayList();
         editGroupChecker.setSelected(true);
+        addGroupButton.setDisable(true);
+        deleteGroupButton.setDisable(true);
+        comboGroupToDelete.setDisable(true);
+        
         groupsTab.setDisable(true);
+        chartsTab.setDisable(true);
+        
         addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
+        addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
         addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
         initTables();
         initListeners();
@@ -282,9 +291,6 @@ public final class Controller implements Initializable {
         comboOnChartGates.setDisable(true);
         comboNotOnChartGates.setDisable(true);
         loadDataButton.setDisable(true);
-    
-        configPane.setDisable(true);
-    
     
         ////////////////////////TODO: CHARTS
         
@@ -332,8 +338,14 @@ public final class Controller implements Initializable {
         
         tableWithCurrentGates.setDisable(true);
     }
-    
     private void initListeners() {
+    
+        groupsTab.setOnSelectionChanged((e) -> {
+            tableWithRemainingGates.getItems().clear();
+            tableWithRemainingGates.getItems().addAll(DBGroupManager.dbGetAllGates());
+        });
+        
+        //groups
         tableWithRemainingGates.setRowFactory(tableView -> {
             final TableRow<GroupGate> row = new TableRow<>();
             final ContextMenu contextMenu = new ContextMenu();
@@ -364,11 +376,24 @@ public final class Controller implements Initializable {
             return row;
         });
         
-        groupsTab.setOnSelectionChanged((e) -> {
-            tableWithRemainingGates.getItems().clear();
-            tableWithRemainingGates.getItems().addAll(DBGroupManager.dbGetAllGates());
+        deleteGroupButton.setOnMouseClicked(e1 ->{
+            String nameOfGroupToDelete = comboGroupToDelete.getSelectionModel().getSelectedItem().toString();
+            String groupId = DBGroupManager.dbGetGroupIdUsingGroupName(nameOfGroupToDelete);
+            if (groupId != null){
+                if (DBGroupManager.dbDeleteGroupUsingGroupId(groupId)){
+                    List<String> allExistingGroupNames = DBGroupManager.dbGetAllExistingGroupNames();
+                    comboMenuEdit.getSelectionModel().clearSelection();
+                    comboGroupToDelete.getSelectionModel().clearSelection();
+                    comboChooseGroup.getSelectionModel().clearSelection();
+                    listToEdit.clear();
+                    listToChoose.clear();
+                    
+                    addComboBoxOptionsFromList(comboMenuEdit, listToEdit, allExistingGroupNames);
+                    addComboBoxOptionsFromList(comboGroupToDelete, listToEdit);
+                    addComboBoxOptionsFromList(comboChooseGroup, listToChoose, allExistingGroupNames);
+                }
+            }
         });
-        
         comboMenuEdit.setOnAction((e) -> {
             try {
                 dataContainer.setCurrentGroupName(getNewGroupName());
@@ -399,6 +424,43 @@ public final class Controller implements Initializable {
                 MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e1).trim());
             }
         });
+    
+        confirmChangesButton.setOnMouseClicked((event) ->{
+            try {
+                dataContainer.setGroupId(DBGroupManager.dbGetGroupIdUsingGroupName(getNewGroupName()));
+                for (GroupGate groupGate : tableWithCurrentGates.getItems()) {
+                    // groupGate does not always contain groupId -> use dataContainer
+                    DBGroupManager.dbInsertCurrentGatesIntoGroup(groupGate.getGateId(), dataContainer.getGroupId());
+                }
+            } catch (GuiAccessException e) {
+                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            }
+        });
+        addGroupButton.setOnMouseClicked((e2) ->{
+            try {
+                String groupName = getNewGroupName();
+                DBGroupManager.dbAddGroup(groupName);
+        
+                // fix GUI after not user-driven changes
+                comboMenuEdit.getSelectionModel().clearSelection();
+                comboChooseGroup.getSelectionModel().clearSelection();
+                listToEdit.clear();
+                listToChoose.clear();
+        
+                List<String> allExistingGroupNames = DBGroupManager.dbGetAllExistingGroupNames();
+                addComboBoxOptionsFromList(comboMenuEdit, listToEdit, allExistingGroupNames);
+                addComboBoxOptionsFromList(comboGroupToDelete, listToEdit);
+                addComboBoxOptionsFromList(comboChooseGroup, listToChoose, allExistingGroupNames);
+        
+                //simulate enabling "Edycja" with mouse
+                editGroupChecker.setSelected(true);
+                handleMouseClicked_OnEditChecker();
+        
+            } catch (GuiAccessException | SQLException e) {
+                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            }
+        });
+        //charts
         comboChooseGroup.setOnAction((e) -> {
             gatesNotOnChartList.clear();
             gatesOnChartList.clear();
@@ -411,7 +473,10 @@ public final class Controller implements Initializable {
             }
             
             addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList, groupGatesNames);
+            
             loadDataButton.setDisable(false);
+            comboOnChartGates.setDisable(true);
+            comboNotOnChartGates.setDisable(true);
             
             progressBar.setProgress(0);
             progressIndicator.setProgress(0);
@@ -461,6 +526,10 @@ public final class Controller implements Initializable {
     
     private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String> newOptions) {
         list.addAll(newOptions);
+        list.sort(Comparator.naturalOrder());
+        box.setItems(list);
+    }
+    private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list) {
         list.sort(Comparator.naturalOrder());
         box.setItems(list);
     }
