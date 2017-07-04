@@ -23,6 +23,5 @@ final class DBDataImporter extends Thread {
         }
         //solution for: progressbar cant be static
         Controller.getInstance().changeProgress();
-        System.out.println("koniec");
     }
 }
