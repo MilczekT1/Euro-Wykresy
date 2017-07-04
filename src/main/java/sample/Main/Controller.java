@@ -18,6 +18,7 @@ import org.jfree.data.xy.XYDataset;
 import sample.Exceptions.GuiAccessException;
 import sample.General.MyLogger;
 import sample.General.ThreadPool;
+import sample.General.Utils;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -35,7 +36,6 @@ public final class Controller implements Initializable {
     static Controller getInstance() {
         return instance;
     }
-    private static ExecutorService executorService = ThreadPool.getInstance();
     
     //-------------------------------------------------------------------TABS
     @FXML private Tab groupsTab;
@@ -66,33 +66,29 @@ public final class Controller implements Initializable {
     private XYDataset xyDigitalDataset;
     
     public void importChartData() {
-        //LocalDate startDate = startDatePicker.getValue();
-        //LocalTime startTime = startTimePicker.getValue();
-        LocalDate startDate = LocalDate.of(2017,1,1);
-        LocalTime startTime = LocalTime.of(1,0);
-        Timestamp startPoint = Timestamp.valueOf(LocalDateTime.of(startDate, startTime));
+        LocalDate startDate = LocalDate.of(2017,1,1); //startDatePicker.getValue();
+        LocalTime startTime = LocalTime.of(12,0); //startTimePicker.getValue();
+        LocalDate endDate = LocalDate.of(2017,5,1); //endDatePicker.getValue();
+        LocalTime endTime = LocalTime.of(12,0); //endTimePicker.getValue();
         
-        //LocalDate endDate = endDatePicker.getValue();
-        //LocalTime endTime = endTimePicker.getValue();
-        LocalDate endDate = LocalDate.of(2017,4,3);
-        LocalTime endTime = LocalTime.of(1,0);
+        Timestamp startPoint = Timestamp.valueOf(LocalDateTime.of(startDate, startTime));
         Timestamp endPoint = Timestamp.valueOf(LocalDateTime.of(endDate, endTime));
-        //TODO:sprawdz
-        /*
-        if (startDate.isAfter(endDate)) {
-            JOptionPane.showMessageDialog(null,"Punkt początkowy jest później niż końcowy");
+        
+        if(startPoint.after(endPoint)) {
+            Utils.showMessageDialog("Punkt początkowy jest później niż końcowy");
+            startDatePicker.setValue(null);
+            endDatePicker.setValue(null);
+            startTimePicker.setValue(null);
+            endTimePicker.setValue(null);
             return;
         }
-        */
-        comboChooseGroup.setDisable(true);
         
         LinkedList<DBDataImporter> importers = new LinkedList<>();
         for (int i = 0; i < dataContainer.chartGroupGates.size(); i++) {
             String gateId = dataContainer.chartGroupGates.get(i).getGateId();
             importers.add(new DBDataImporter(gateId, startPoint.getTime(), endPoint.getTime()));
         }
-        
-        executorService = ThreadPool.getInstance();
+        ExecutorService executorService = ThreadPool.getInstance();
         for (DBDataImporter importer : importers) {
             executorService.execute(importer);
         }
@@ -110,6 +106,7 @@ public final class Controller implements Initializable {
             comboOnChartGates.setDisable(false);
         });
         
+        comboChooseGroup.setDisable(true);
         loadDataButton.setDisable(true);
         //System.out.println(new Timestamp(1485979049614L).toLocalDateTime().toString());
     }
@@ -480,7 +477,9 @@ public final class Controller implements Initializable {
             
             progressBar.setProgress(0);
             progressIndicator.setProgress(0);
-            //TODO: clear charts
+            //Clear charts
+            analogChart.getXYPlot().setDataset(null);
+            digitalChart.getXYPlot().setDataset(null);
         });
         
         // do dodania na wykresu
@@ -499,7 +498,6 @@ public final class Controller implements Initializable {
                         analogChart.getXYPlot().setDataset(xyAnalogDataset);
                         //analogChart = Chart.createChart(xyAnalogDataset,"analog", "cisnienie");
                         //topChartViewer.setChart(analogChart);
-    
                         break;
                     }
                 }
