@@ -1,6 +1,7 @@
 package sample.Main;
 
 import com.google.common.base.Throwables;
+import com.microsoft.sqlserver.jdbc.SQLServerException;
 import lombok.Cleanup;
 import sample.General.Configurator;
 import sample.General.MyLogger;
@@ -73,6 +74,7 @@ final class DBGroupManager {
             statement.execute(query);
         } catch (SQLException e) {
             // One of the scripts from "Create_Groups.sql" failed (because exists)
+            MyLogger.getLogger().log(Level.INFO, "Nie utworzono jednej z tabel");
         }
     }
     
@@ -173,8 +175,8 @@ final class DBGroupManager {
             }
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            return null;
         }
-        return null;
     }
     protected static GroupGate dbGetGateUsingGateId(String gateId){
         try {
@@ -225,6 +227,28 @@ final class DBGroupManager {
             preparedStatement = connection.prepareStatement(insertGroupSQL);
             preparedStatement.setString(1,groupName);
             preparedStatement.executeUpdate();
+        }
+    }
+    static boolean dbDeleteGroupUsingGroupId(String groupId){
+        String sql = "USE wizualizacja2;" +
+                             "DELETE FROM KONRAD_GRUPY " +
+                             "WHERE Id_Grupy = ?; ";
+        try {
+            @Cleanup
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1,groupId);
+            @Cleanup
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.wasNull()){
+                return true;
+            }
+            else{
+                throw new SQLException("Nieudana proba usuniecia grupy z numerem: " + groupId);
+            }
+        } catch (SQLException e) {
+            if (e instanceof SQLServerException) return true;
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            return false;
         }
     }
     static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId){
