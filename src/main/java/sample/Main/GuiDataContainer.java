@@ -1,5 +1,7 @@
 package sample.Main;
 import lombok.Data;
+import org.omg.CORBA.DoubleHolder;
+import org.omg.CORBA.IntHolder;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -11,6 +13,7 @@ final class GuiDataContainer {
     private GuiDataContainer(){
         chartGroupGates = new LinkedList<>();
         allChartData = new ArrayList<>(20);
+        amountOfProcessedThreads = new IntHolder(0);
     }
     public static GuiDataContainer getInstance(){
         return instance;
@@ -19,7 +22,8 @@ final class GuiDataContainer {
     private static String ACCESS_TYPE;
     protected LinkedList<GroupGate> chartGroupGates;
     
-    protected static ArrayList<GateData> allChartData;
+    protected static ArrayList<GateData> allChartData; //TODO: private?
+    private IntHolder amountOfProcessedThreads;
     
     private String currentGroupName;
     private String gateDescriptionToRemove;
@@ -40,5 +44,9 @@ final class GuiDataContainer {
     
     static ArrayList<GateData> getAllChartData() {
         return allChartData;
+    }
+    
+    public IntHolder getAmountOfProcessedThreads() {
+        return amountOfProcessedThreads;
     }
 }

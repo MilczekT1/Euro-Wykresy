@@ -268,6 +268,8 @@ public final class Controller implements Initializable {
         listToEdit = FXCollections.observableArrayList();
         listToChoose = FXCollections.observableArrayList();
         editGroupChecker.setSelected(true);
+        newGroupTextField.setDisable(true);
+        
         addGroupButton.setDisable(true);
         deleteGroupButton.setDisable(true);
         comboGroupToDelete.setDisable(true);
@@ -512,10 +514,9 @@ public final class Controller implements Initializable {
             //TODO: remove data from chart
             if (comboOnChartGates.getSelectionModel().getSelectedItem() != null) {
                 String selectedGateToRemove = comboOnChartGates.getSelectionModel().getSelectedItem().toString();
-                LinkedList<String> newList = new LinkedList<>();
-                newList.add(selectedGateToRemove);
     
-                addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList, newList);
+                addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList,
+                                            Collections.singletonList(selectedGateToRemove));
                 comboOnChartGates.getItems().remove(selectedGateToRemove);
                 comboOnChartGates.getSelectionModel().clearSelection();
             }
@@ -535,7 +536,12 @@ public final class Controller implements Initializable {
     public synchronized void changeProgress() {
         double oldProgress = progressBar.getProgress();
         double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
-        double newProgress = (oldProgress + 1 / denominator);
+        double newProgress = oldProgress + (1 / denominator);
+        GuiDataContainer.getInstance().getAmountOfProcessedThreads().value +=1;
+        if (GuiDataContainer.getInstance().getAmountOfProcessedThreads().value == denominator){
+            newProgress = 1;
+            GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
+        }
         progressBar.setProgress(newProgress);
         progressIndicator.setProgress(newProgress);
     }
