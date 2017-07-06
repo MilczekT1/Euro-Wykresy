@@ -17,11 +17,11 @@ final class DBDataImporter extends Thread {
     
     @Override
     public void run() {
-        CachedRowSet rows = Chart.importGateValues(gateId,start,end);
+        CachedRowSet rows = Chart.dbImportGateValues(gateId,start,end);
         synchronized (GuiDataContainer.getAllChartData()){
             GuiDataContainer.getAllChartData().add(new GateData(gateId,rows));
         }
-        //solution for: progressbar cant be static
+        //Controller instance, because progressbar cant be static
         Controller.getInstance().changeProgress();
     }
 }
