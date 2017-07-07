@@ -2,14 +2,34 @@ package sample.Main;
 
 import lombok.Getter;
 import javax.sql.rowset.CachedRowSet;
+import java.sql.SQLException;
+import java.util.stream.DoubleStream;
+import java.util.stream.LongStream;
 
 @Getter
 class GateData {
-    private final String gateId;
-    private CachedRowSet values;
+    private String gateId;
+    private long[] timestamps;
+    private double[] values;
     
-    public GateData(String gateId, CachedRowSet values) {
+    public GateData(String gateId, CachedRowSet crs) {
         this.gateId = gateId;
-        this.values = values;
+        timestamps = new long[crs.size()];
+        values = new double[crs.size()];
+        int counter = 0;
+        try {
+            while (crs.next()){
+                timestamps[counter] = crs.getLong("time");
+                values[counter] = crs.getDouble("value");
+                counter++;
+            }
+            //Runtime.getRuntime().gc();
+        } catch (SQLException e) {
+            e.printStackTrace();//TODO: log it
+        }
+    }
+    
+    public String getGateId() {
+        return gateId;
     }
 }

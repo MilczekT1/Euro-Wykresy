@@ -83,7 +83,7 @@ public final class Controller implements Initializable {
             return;
         }
         
-        LinkedList<DBDataImporter> importers = new LinkedList<>();
+        ArrayList<DBDataImporter> importers = new ArrayList<>(20);//TODO: liczba z konfiguracji
         for (int i = 0; i < dataContainer.chartGroupGates.size(); i++) {
             String gateId = dataContainer.chartGroupGates.get(i).getGateId();
             importers.add(new DBDataImporter(gateId, startPoint.getTime(), endPoint.getTime()));
@@ -299,8 +299,13 @@ public final class Controller implements Initializable {
         digitalChart = Chart.createChart(xyDigitalDataset, "cyfrowy", "parowki");
         
         topChartViewer = new ChartViewer(analogChart);
+    
         bottomChartViewer = new ChartViewer(digitalChart);
         
+        
+        
+        topChartViewer.prefHeightProperty().bind(topChartPane.heightProperty());
+        bottomChartViewer.prefHeightProperty().bind(bottomChartPane.heightProperty());
         topChartPane.getChildren().add(topChartViewer);
         bottomChartPane.getChildren().add(bottomChartViewer);
         
@@ -466,7 +471,7 @@ public final class Controller implements Initializable {
             
             dataContainer.setChartGroupGates(DBGroupManager.dbGetAllGatesFromGroup(comboChooseGroup.getSelectionModel().getSelectedItem().toString()));
             GuiDataContainer.getAllChartData().clear();
-            LinkedList<String> groupGatesNames = new LinkedList<>();
+            ArrayList<String> groupGatesNames = new ArrayList<>();
             for (GroupGate gate : dataContainer.getChartGroupGates()) {
                 groupGatesNames.add(gate.getDescription());
             }
@@ -488,30 +493,28 @@ public final class Controller implements Initializable {
         comboNotOnChartGates.setOnHiding((e) -> {
             if (comboNotOnChartGates.getSelectionModel().getSelectedItem() != null) {
                 String selectedGateToAdd = comboNotOnChartGates.getSelectionModel().getSelectedItem().toString();
-                LinkedList<String> newList = new LinkedList<>();
-                newList.add(selectedGateToAdd);
                 
                 String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
                 for (GateData gateData : GuiDataContainer.getAllChartData()) {
                     if (gateData.getGateId().equals(gateId)) {
                         //TODO: wrzucic dane na wykres na podstawie gateId
-                        xyAnalogDataset = Chart.putGateValues(gateData.getValues());
+                        xyAnalogDataset = Chart.putGateValues(gateData);
                         //analogChart = Chart.createChart(xyAnalogDataset, "analog", "lol"/*TODO!*/);
                         analogChart.getXYPlot().setDataset(xyAnalogDataset);
                         //analogChart = Chart.createChart(xyAnalogDataset,"analog", "cisnienie");
                         //topChartViewer.setChart(analogChart);
+                        Runtime.getRuntime().gc();
                         break;
                     }
                 }
                 
-                addComboBoxOptionsFromList(comboOnChartGates, gatesOnChartList, newList);
+                addComboBoxOptionsFromList(comboOnChartGates, gatesOnChartList, Collections.singletonList(selectedGateToAdd));
                 comboNotOnChartGates.getItems().remove(selectedGateToAdd);
                 comboNotOnChartGates.getSelectionModel().clearSelection();
             }
         });
         // do usuniecia wykresu
         comboOnChartGates.setOnHiding((e) -> {
-            //TODO: remove data from chart
             if (comboOnChartGates.getSelectionModel().getSelectedItem() != null) {
                 String selectedGateToRemove = comboOnChartGates.getSelectionModel().getSelectedItem().toString();
     
@@ -519,6 +522,8 @@ public final class Controller implements Initializable {
                                             Collections.singletonList(selectedGateToRemove));
                 comboOnChartGates.getItems().remove(selectedGateToRemove);
                 comboOnChartGates.getSelectionModel().clearSelection();
+    
+                //TODO: remove data from chart
             }
         });
     }

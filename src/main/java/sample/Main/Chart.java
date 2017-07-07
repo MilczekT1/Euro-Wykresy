@@ -1,6 +1,7 @@
 package sample.Main;
 
 import com.google.common.base.Throwables;
+import lombok.Cleanup;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.time.*;
@@ -14,7 +15,7 @@ import java.util.Date;
 import java.util.logging.Level;
 
 class Chart {
-    
+
     public static XYDataset createDefaultDataset( ) {
         /*
         TimeSeries series = new TimeSeries( "Random Data" );
@@ -34,16 +35,14 @@ class Chart {
         TimeSeries series = new TimeSeries("default");
         return new TimeSeriesCollection(series);
     }
-    public static XYDataset putGateValues(CachedRowSet crs){
+    public static XYDataset
+    putGateValues(GateData gateData){
         TimeSeries series = new TimeSeries("lolek");
-        try {
-            while (crs.next()){
-                RegularTimePeriod time = new Second(new Date(crs.getLong("time")));
-                //series.add(new Millisecond(new Date(crs.getLong("time"))),crs.getDouble("value"));
-                series.addOrUpdate(time, crs.getDouble("value"));
-            }
-        } catch(SQLException e){
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+        RegularTimePeriod time;
+        for(int i=0; i< gateData.getTimestamps().length; i++){
+            time = new Second(new Date(gateData.getTimestamps()[i]));
+            //series.add(new Millisecond(new Date(crs.getLong("time"))),crs.getDouble("value"));
+            series.addOrUpdate(time, gateData.getValues()[i]);
         }
         return new TimeSeriesCollection(series);
     }
@@ -52,25 +51,19 @@ class Chart {
         return ChartFactory.createTimeSeriesChart(title,"Czas", measureType,dataset,false,false,false);
     }
     
-    public static CachedRowSet importGateValues(String gateId, long start, long end){
-        //private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    public static CachedRowSet dbImportGateValues(String gateId, long start, long end) throws SQLException{
         String sql = "use e6_VfiTag;\n" +
                              "SELECT time, value FROM VfiTagNumHistory\n" +
                              "WHERE gateId = ? AND time BETWEEN ? AND ?;";
-        try {
-            CachedRowSet crs = new com.sun.rowset.CachedRowSetImpl();
-            crs.setUrl("jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress"));
-            crs.setUsername(Configurator.getCurrentSettings().getProperty("User"));
-            crs.setPassword(Configurator.getCurrentSettings().getProperty("Password"));
-            crs.setCommand(sql);
-            crs.setString(1,gateId);
-            crs.setLong(2,start);
-            crs.setLong(3,end);
-            crs.execute();
-            return crs;
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-        }
-        return null;
+        CachedRowSet crs = new com.sun.rowset.CachedRowSetImpl();
+        crs.setUrl("jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress"));
+        crs.setUsername(Configurator.getCurrentSettings().getProperty("User"));
+        crs.setPassword(Configurator.getCurrentSettings().getProperty("Password"));
+        crs.setCommand(sql);
+        crs.setString(1,gateId);
+        crs.setLong(2,start);
+        crs.setLong(3,end);
+        crs.execute();
+        return crs;
     }
 }
