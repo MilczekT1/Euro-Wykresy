@@ -11,5 +11,4 @@ public final class ThreadPool {
     public void turnOnAfterShutdown(){
         instance = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
-    
 }
