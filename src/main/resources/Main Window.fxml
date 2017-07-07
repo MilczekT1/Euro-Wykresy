@@ -31,39 +31,31 @@
             <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
                 <Tab text="Logowanie">
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                        <Label alignment="CENTER" layoutX="14.0" layoutY="24.0" prefHeight="30.0" prefWidth="61.0"
-                               text="Login:">
+                        <Label alignment="CENTER" layoutX="14.0" layoutY="24.0" prefHeight="30.0" prefWidth="61.0" text="Login:">
                             <font>
-                                <Font size="18.0"/>
+                                <Font size="18.0" />
                             </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="14.0" layoutY="60.0" prefHeight="30.0" prefWidth="61.0"
-                               text="Hasło:">
+                        <Label alignment="CENTER" layoutX="14.0" layoutY="60.0" prefHeight="30.0" prefWidth="61.0" text="Hasło:">
                             <font>
-                                <Font size="18.0"/>
+                                <Font size="18.0" />
                             </font>
                         </Label>
-                        <Label fx:id="login_Label" alignment="CENTER" layoutX="45.0" layoutY="157.0" prefHeight="30.0"
-                               prefWidth="244.0" text="     " textAlignment="CENTER" textFill="GREEN">
+                        <Label fx:id="login_Label" alignment="CENTER" layoutX="45.0" layoutY="157.0" prefHeight="30.0" prefWidth="244.0" text="     " textAlignment="CENTER" textFill="GREEN">
                             <font>
-                                <Font size="18.0"/>
+                                <Font size="18.0" />
                             </font>
                         </Label>
-                        <JFXPasswordField fx:id="login_Password" alignment="CENTER" layoutX="80.0" layoutY="60.0"
-                                          minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0"
-                                          promptText="Hasło (min 6 znaków)"/>
-                        <JFXTextField fx:id="login_Login" alignment="CENTER" layoutX="80.0" layoutY="26.0"
-                                      minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0"
-                                      promptText="Imie_Nazwisko"/>
-                        <JFXButton alignment="CENTER" layoutX="136.0" layoutY="103.0" onMouseClicked="#loginUser"
-                                   style="-fx-border-color: grey;" text="Zaloguj">
+                        <JFXPasswordField fx:id="login_Password" alignment="CENTER" layoutX="80.0" layoutY="60.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Hasło (min 6 znaków)" />
+                        <JFXTextField fx:id="login_Login" alignment="CENTER" layoutX="80.0" layoutY="26.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Imie_Nazwisko" />
+                        <JFXButton alignment="CENTER" layoutX="136.0" layoutY="103.0" onMouseClicked="#loginUser" style="-fx-border-color: grey;" text="Zaloguj">
                             <font>
-                                <Font size="18.0"/>
+                                <Font size="18.0" />
                             </font>
                         </JFXButton>
                         <Label fx:id="loggedUser_Label" layoutX="454.0" layoutY="27.0" text="Zalogowany:">
                             <font>
-                                <Font size="18.0"/>
+                                <Font size="18.0" />
                             </font>
                         </Label>
                     </AnchorPane>
@@ -71,37 +63,27 @@
                 <Tab text="Rejestracja">
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                         <children>
-                            <Label fx:id="register_Label" layoutX="410.0" layoutY="61.0" prefHeight="28.0"
-                                   prefWidth="257.0">
+                            <Label fx:id="register_Label" layoutX="410.0" layoutY="61.0" prefHeight="28.0" prefWidth="257.0">
                                 <font>
-                                    <Font size="18.0"/>
+                                    <Font size="18.0" />
                                 </font>
                             </Label>
-                            <JFXPasswordField fx:id="register_Password" alignment="CENTER" layoutX="80.0" layoutY="60.0"
-                                              minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0"
-                                              prefWidth="200.0" promptText="Hasło (min 6 znaków)"/>
-                            <JFXTextField fx:id="register_Login" alignment="CENTER" layoutX="80.0" layoutY="26.0"
-                                          minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0"
-                                          promptText="Imie_Nazwisko"/>
-                            <Label alignment="CENTER" layoutX="14.0" layoutY="60.0" prefHeight="30.0" prefWidth="61.0"
-                                   text="Hasło:">
+                            <JFXPasswordField fx:id="register_Password" alignment="CENTER" layoutX="80.0" layoutY="60.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Hasło (min 6 znaków)" />
+                            <JFXTextField fx:id="register_Login" alignment="CENTER" layoutX="80.0" layoutY="26.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Imie_Nazwisko" />
+                            <Label alignment="CENTER" layoutX="14.0" layoutY="60.0" prefHeight="30.0" prefWidth="61.0" text="Hasło:">
                                 <font>
-                                    <Font size="18.0"/>
+                                    <Font size="18.0" />
                                 </font>
                             </Label>
-                            <Label alignment="CENTER" layoutX="14.0" layoutY="24.0" prefHeight="30.0" prefWidth="61.0"
-                                   text="Login:">
+                            <Label alignment="CENTER" layoutX="14.0" layoutY="24.0" prefHeight="30.0" prefWidth="61.0" text="Login:">
                                 <font>
-                                    <Font size="18.0"/>
+                                    <Font size="18.0" />
                                 </font>
                             </Label>
-                            <JFXPasswordField fx:id="register_RepeatedPassword" alignment="CENTER" layoutX="80.0"
-                                              layoutY="106.0" minHeight="-Infinity" minWidth="-Infinity"
-                                              prefHeight="25.0" prefWidth="200.0" promptText="Powtórz Hasło"/>
-                            <JFXButton alignment="CENTER" layoutX="121.0" layoutY="163.0" onMouseClicked="#registerUser"
-                                       style="-fx-border-color: grey;" text="Zarejestruj">
+                            <JFXPasswordField fx:id="register_RepeatedPassword" alignment="CENTER" layoutX="80.0" layoutY="106.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Powtórz Hasło" />
+                            <JFXButton alignment="CENTER" layoutX="121.0" layoutY="163.0" onMouseClicked="#registerUser" style="-fx-border-color: grey;" text="Zarejestruj">
                                 <font>
-                                    <Font size="18.0"/>
+                                    <Font size="18.0" />
                                 </font>
                             </JFXButton>
                         </children>
@@ -147,7 +129,7 @@
             </AnchorPane>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                 <SplitPane layoutX="288.0" layoutY="184.0" orientation="VERTICAL" prefHeight="567.0" prefWidth="540.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <GridPane>
+                    <GridPane fx:id="hehe">
                         <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                         </columnConstraints>
@@ -155,12 +137,16 @@
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         </rowConstraints>
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefViewportHeight="283.0" prefViewportWidth="601.0">
-                            <AnchorPane fx:id="topChartPane" prefHeight="200.0" prefWidth="200.0" />
-                        </ScrollPane>
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefViewportHeight="282.0" prefViewportWidth="601.0" GridPane.rowIndex="1">
-                            <AnchorPane fx:id="bottomChartPane" prefHeight="282.0" prefWidth="599.0" GridPane.rowIndex="1" />
-                        </ScrollPane>
+                  <ScrollPane fitToHeight="true" fitToWidth="true" GridPane.valignment="CENTER">
+                     <content>
+                               <AnchorPane fx:id="topChartPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" />
+                     </content>
+                  </ScrollPane>
+                  <ScrollPane fitToHeight="true" fitToWidth="true" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                     <content>
+                               <AnchorPane fx:id="bottomChartPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" />
+                     </content>
+                  </ScrollPane>
                     </GridPane>
                 </SplitPane>
             </AnchorPane>
