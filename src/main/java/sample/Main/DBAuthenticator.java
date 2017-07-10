@@ -29,20 +29,31 @@ final class DBAuthenticator {
     private static Connection connection;
     private static DBAuthenticator instance = new DBAuthenticator();
     
-    private DBAuthenticator(){
-        try {
-            Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(DB, USER, USERPW);
-        } catch (InstantiationException | IllegalAccessException | SQLException | ClassNotFoundException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
+    private DBAuthenticator(){}
+    
+    public static DBAuthenticator getInstance() {
+        return instance;
+    }
+    public void connectIfNull() {
+        if (DBAuthenticator.getInstance() != null) {
+            ;
         }
-        
-        try {
-            createTablesIfNotExists();
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
+        else{
+            try {
+                Class.forName(DRIVER).newInstance();
+                connection = DriverManager.getConnection(DB, USER, USERPW);
+            } catch (InstantiationException | IllegalAccessException | SQLException | ClassNotFoundException e) {
+                MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
+            }
+    
+            try {
+                createTablesIfNotExists();
+            } catch (SQLException e) {
+                MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
+            }
         }
     }
+    
     private void createTablesIfNotExists() throws SQLException {
         @Cleanup
         Statement statement = connection.createStatement();

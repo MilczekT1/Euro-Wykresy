@@ -26,22 +26,32 @@ final class DBGroupManager {
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static Connection connection;
     private static DBGroupManager instance = new DBGroupManager();
-
-    private DBGroupManager(){
-        try {
-            Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(DB, USER, USERPW);
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
-            System.exit(1);
-        }
     
-        try {
-            createTablesIfNotExists();
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+    private DBGroupManager(){}
+    
+    public static DBGroupManager getInstance() {
+        return instance;
+    }
+    public void connectIfNull() {
+        if (DBGroupManager.getInstance() != null) {
+            ;
+        }
+        else{
+            try {
+                Class.forName(DRIVER).newInstance();
+                connection = DriverManager.getConnection(DB, USER, USERPW);
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
+            } catch (SQLException e) {
+                MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
+                System.exit(1);
+            }
+    
+            try {
+                createTablesIfNotExists();
+            } catch (SQLException e) {
+                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            }
         }
     }
     private void createTablesIfNotExists() throws SQLException {

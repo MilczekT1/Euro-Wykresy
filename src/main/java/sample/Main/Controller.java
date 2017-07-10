@@ -126,6 +126,8 @@ public final class Controller implements Initializable {
         String login = login_Login.getText();
         String password = login_Password.getText();
         login_Label.setText("");
+        DBAuthenticator.getInstance().connectIfNull();
+        DBGroupManager.getInstance().connectIfNull();
         if (DBAuthenticator.tryToLoginAndReturnAccessType(login, DBAuthenticator.hashPassword(password), dataContainer)) {
             accessLevel = dataContainer.getAccessLevel();
             login_Label.setTextFill(Paint.valueOf("green"));
@@ -153,6 +155,7 @@ public final class Controller implements Initializable {
         register_Label.setText("");
         if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) && // Name_LastName
                     Pattern.matches("^\\S{6,100}", password)) {
+            DBAuthenticator.getInstance().connectIfNull();
             if (DBAuthenticator.tryToRegister(login, DBAuthenticator.hashPassword(password))) {
                 register_Label.setDisable(false);
                 register_Label.setTextFill(Paint.valueOf("green"));
@@ -277,9 +280,6 @@ public final class Controller implements Initializable {
         groupsTab.setDisable(true);
         chartsTab.setDisable(true);
         
-        addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
-        addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
-        addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
         initTables();
         initListeners();
     
@@ -301,7 +301,6 @@ public final class Controller implements Initializable {
         topChartViewer = new ChartViewer(analogChart);
     
         bottomChartViewer = new ChartViewer(digitalChart);
-        
         
         
         topChartViewer.prefHeightProperty().bind(topChartPane.heightProperty());
@@ -347,6 +346,10 @@ public final class Controller implements Initializable {
         groupsTab.setOnSelectionChanged((e) -> {
             tableWithRemainingGates.getItems().clear();
             tableWithRemainingGates.getItems().addAll(DBGroupManager.dbGetAllGates());
+            
+            addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
+            addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
+            addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
         });
         
         //groups
