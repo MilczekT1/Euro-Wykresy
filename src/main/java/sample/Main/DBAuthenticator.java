@@ -35,7 +35,7 @@ final class DBAuthenticator {
         return instance;
     }
     public void connectIfNull() {
-        if (DBAuthenticator.getInstance() != null) {
+        if (connection != null) {
             ;
         }
         else{
@@ -51,6 +51,15 @@ final class DBAuthenticator {
             } catch (SQLException e) {
                 MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
             }
+        }
+    }
+    public void closeConnection(){
+        try {
+            if (!connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
     
