@@ -67,9 +67,10 @@ public final class Controller implements Initializable {
     private XYDataset xyDigitalDataset;
     
     public void importChartData() {
+        Runtime.getRuntime().gc();
         LocalDate startDate = LocalDate.of(2017,1,1); //startDatePicker.getValue();
         LocalTime startTime = LocalTime.of(12,0); //startTimePicker.getValue();
-        LocalDate endDate = LocalDate.of(2017,5,1); //endDatePicker.getValue();
+        LocalDate endDate = LocalDate.of(2017,3,1); //endDatePicker.getValue();
         LocalTime endTime = LocalTime.of(12,0); //endTimePicker.getValue();
         
         Timestamp startPoint = Timestamp.valueOf(LocalDateTime.of(startDate, startTime));
@@ -77,6 +78,7 @@ public final class Controller implements Initializable {
         
         if(startPoint.after(endPoint)) {
             Utils.showMessageDialog("Punkt początkowy jest później niż końcowy");
+            //todo set default value
             startDatePicker.setValue(null);
             endDatePicker.setValue(null);
             startTimePicker.setValue(null);
@@ -84,7 +86,7 @@ public final class Controller implements Initializable {
             return;
         }
         
-        ArrayList<DBDataImporter> importers = new ArrayList<>(20);//TODO: liczba z konfiguracji
+        ArrayList<DBDataImporter> importers = new ArrayList<>(20);//TODO: size from configuration
         for (int i = 0; i < dataContainer.chartGroupGates.size(); i++) {
             String gateId = dataContainer.chartGroupGates.get(i).getGateId();
             importers.add(new DBDataImporter(gateId, startPoint.getTime(), endPoint.getTime()));
@@ -109,6 +111,7 @@ public final class Controller implements Initializable {
         
         comboChooseGroup.setDisable(true);
         loadDataButton.setDisable(true);
+        //todo
         //System.out.println(new Timestamp(1485979049614L).toLocalDateTime().toString());
     }
     //-------------------------------------------------------------------LOGIN
@@ -275,20 +278,23 @@ public final class Controller implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        instance = this;
+        
         dataContainer = GuiDataContainer.getInstance();
         listToEdit = FXCollections.observableArrayList();
         listToChoose = FXCollections.observableArrayList();
         editGroupChecker.setSelected(true);
         newGroupTextField.setDisable(true);
-        
+    
         addGroupButton.setDisable(true);
         deleteGroupButton.setDisable(true);
         comboGroupToDelete.setDisable(true);
-        
+    
         groupsTab.setDisable(true);
         chartsTab.setDisable(true);
-        
+    
         initTables();
+        initCharts();
         initListeners();
     
         gatesNotOnChartList = FXCollections.observableArrayList();
@@ -298,26 +304,6 @@ public final class Controller implements Initializable {
         comboOnChartGates.setDisable(true);
         comboNotOnChartGates.setDisable(true);
         loadDataButton.setDisable(true);
-    
-        ////////////////////////TODO: CHARTS
-        
-        xyAnalogDataset = Chart.createEmptyDataset();
-        xyDigitalDataset = Chart.createEmptyDataset();
-        analogChart = Chart.createChart(xyAnalogDataset, "analog", "cisnienie");
-        analogChart.getXYPlot().getDomainAxis().setAutoRange(true);
-        digitalChart = Chart.createChart(xyDigitalDataset, "cyfrowy", "parowki");
-        digitalChart.getXYPlot().getDomainAxis().setAutoRange(true);
-        
-        topChartViewer = new ChartViewer(analogChart);
-        bottomChartViewer = new ChartViewer(digitalChart);
-        
-        
-        topChartViewer.prefHeightProperty().bind(topChartPane.heightProperty());
-        bottomChartViewer.prefHeightProperty().bind(bottomChartPane.heightProperty());
-        topChartPane.getChildren().add(topChartViewer);
-        bottomChartPane.getChildren().add(bottomChartViewer);
-        
-        instance = this;
     }
     
     private void initTables() {
@@ -350,8 +336,20 @@ public final class Controller implements Initializable {
         
         tableWithCurrentGates.setDisable(true);
     }
-    private void initListeners() {
+    private void initCharts(){
+    
+        createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
+        createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
+    
+        //topChartViewer = new ChartViewer(analogChart);
+        //bottomChartViewer = new ChartViewer(analogChart);
         
+        topChartViewer.prefHeightProperty().bind(topChartPane.heightProperty());
+        topChartPane.getChildren().add(topChartViewer);
+        bottomChartViewer.prefHeightProperty().bind(bottomChartPane.heightProperty());
+        bottomChartPane.getChildren().add(bottomChartViewer);
+    }
+    private void initListeners() {
         //groups
         tableWithRemainingGates.setRowFactory(tableView -> {
             final TableRow<GroupGate> row = new TableRow<>();
@@ -473,7 +471,9 @@ public final class Controller implements Initializable {
             gatesOnChartList.clear();
             
             dataContainer.setChartGroupGates(DBGroupManager.dbGetAllGatesFromGroup(comboChooseGroup.getSelectionModel().getSelectedItem().toString()));
+            dataContainer.getRenderersAndGateIdsOnChart().clear();
             GuiDataContainer.getAllChartData().clear();
+            
             ArrayList<String> groupGatesNames = new ArrayList<>();
             for (GroupGate gate : dataContainer.getChartGroupGates()) {
                 groupGatesNames.add(gate.getDescription());
@@ -485,12 +485,10 @@ public final class Controller implements Initializable {
             comboOnChartGates.setDisable(true);
             comboNotOnChartGates.setDisable(true);
             
-            progressBar.setProgress(0);
-            progressIndicator.setProgress(0);
+            setProgress(0);
             //Clear charts
-            //TODO: check
-            analogChart.getXYPlot().setDataset(Chart.createEmptyDataset());
-            digitalChart.getXYPlot().setDataset(Chart.createEmptyDataset());
+            createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
+            createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
         });
         
         // Add gateData to chart
@@ -512,6 +510,7 @@ public final class Controller implements Initializable {
                 addComboBoxOptionsFromList(comboOnChartGates, gatesOnChartList, Collections.singletonList(selectedGateToAdd));
                 comboNotOnChartGates.getItems().remove(selectedGateToAdd);
                 comboNotOnChartGates.getSelectionModel().clearSelection();
+                Runtime.getRuntime().gc();
             }
         });
         // do usuniecia wykresu
@@ -519,25 +518,19 @@ public final class Controller implements Initializable {
             if (comboOnChartGates.getSelectionModel().getSelectedItem() != null) {
                 String selectedGateToRemove = comboOnChartGates.getSelectionModel().getSelectedItem().toString();
     
-                String gateId = dataContainer.getGateIdUsingDescription(selectedGateToRemove);
-                Runtime.getRuntime().gc();
-    
-                xyAnalogDataset = Chart.createEmptyDataset();
-                analogChart = Chart.createChart(xyAnalogDataset, "analog", "cisnienie");
-                topChartViewer.setChart(analogChart);
+                createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
     
                 dataContainer.getRenderersAndGateIdsOnChart().clear();
-                int counter = 1;
                 for (Object x : comboOnChartGates.getItems()) {
                     String selectedGateToAdd = x.toString();
                     if (selectedGateToRemove.equals(selectedGateToAdd)) {
                         continue;
                     }
+                    String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
                     for (GateData gateData : GuiDataContainer.getAllChartData()) {
-                        String GATEID = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
-                        if (gateData.getGateId().equals(GATEID)) {
+                        if (gateData.getGateId().equals(gateId)) {
                             int index = analogChart.getXYPlot().getDatasetCount();
-                            dataContainer.getRenderersAndGateIdsOnChart().put(GATEID, index);
+                            dataContainer.getRenderersAndGateIdsOnChart().put(gateId, index);
                             analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, selectedGateToAdd));
                             analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
                         }
@@ -546,6 +539,7 @@ public final class Controller implements Initializable {
                 addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList, Collections.singletonList(selectedGateToRemove));
                 comboOnChartGates.getItems().remove(selectedGateToRemove);
                 comboOnChartGates.getSelectionModel().clearSelection();
+                Runtime.getRuntime().gc();
             }
         });
     }
@@ -560,6 +554,10 @@ public final class Controller implements Initializable {
         box.setItems(list);
     }
     
+    public void setProgress(double newProgress){
+        progressBar.setProgress(newProgress);
+        progressIndicator.setProgress(newProgress);
+    }
     public synchronized void changeProgress() {
         double oldProgress = progressBar.getProgress();
         double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
@@ -569,7 +567,24 @@ public final class Controller implements Initializable {
             newProgress = 1;
             GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
         }
-        progressBar.setProgress(newProgress);
-        progressIndicator.setProgress(newProgress);
+        setProgress(newProgress);
+    }
+    private void createDefaultAnalogChartInAnalogChartViewer(String title, String measureType){
+        xyAnalogDataset = null;
+        analogChart = Chart.createChart(xyAnalogDataset, title, measureType);
+        analogChart.getXYPlot().getDomainAxis().setAutoRange(true);
+        if (topChartViewer != null)
+            topChartViewer.setChart(analogChart);
+        else
+            topChartViewer = new ChartViewer(analogChart);
+    }
+    private void createDefaultDigitalChartInDigitalChartViewer(String title, String measureType){
+        xyDigitalDataset = null;
+        digitalChart = Chart.createChart(xyDigitalDataset, title, measureType);
+        digitalChart.getXYPlot().getDomainAxis().setAutoRange(true);
+        if (bottomChartViewer != null)
+            bottomChartViewer.setChart(digitalChart);
+        else
+            bottomChartViewer = new ChartViewer(digitalChart);
     }
 }
