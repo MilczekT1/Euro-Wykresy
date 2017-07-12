@@ -20,10 +20,9 @@ final class GuiDataContainer {
         return instance;
     }
     
-    private static String ACCESS_TYPE;
     protected LinkedList<GroupGate> chartGroupGates;
     
-    protected static ArrayList<GateData> allChartData; //TODO: private?
+    private static ArrayList<GateData> allChartData;
     private HashMap<String, Integer> renderersAndGateIdsOnChart;
     private IntHolder amountOfProcessedThreads;
     
