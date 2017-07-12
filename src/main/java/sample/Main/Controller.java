@@ -114,7 +114,7 @@ public final class Controller implements Initializable {
         //todo
         //System.out.println(new Timestamp(1485979049614L).toLocalDateTime().toString());
     }
-    //-------------------------------------------------------------------LOGIN
+    //-------------------------------------------------------------------LOGIN & REGISTER
     private static Integer accessLevel;
     @FXML private JFXTextField login_Login;
     @FXML private JFXPasswordField login_Password;
@@ -185,20 +185,20 @@ public final class Controller implements Initializable {
         register_RepeatedPassword.clear();
     }
     
-    //-------------------------------------------------------------------GROUP MANAGER (RIGHT)
-    @FXML private TableView<GroupGate> tableWithCurrentGates;
-    private ObservableList<GroupGate> currentGroupGates;
-    @FXML private TableView<GroupGate> tableWithRemainingGates;
-    //-------------------------------------------------------------------GROUP MANAGER (LEFT)
+    //-------------------------------------------------------------------GROUP MANAGER
     @FXML private CheckBox addGroupChecker;
     @FXML private CheckBox editGroupChecker;
-    @FXML private JFXTextField newGroupTextField;
     @FXML private JFXButton addGroupButton;
     @FXML private JFXButton deleteGroupButton;
-    @FXML private JFXComboBox comboGroupToDelete;
     @FXML private JFXButton confirmChangesButton;
+    @FXML private JFXComboBox comboGroupToDelete;
     @FXML private JFXComboBox comboMenuEdit;
+    @FXML private JFXTextField newGroupTextField;
     private ObservableList<String> listToEdit;
+    
+    @FXML private TableView<GroupGate> tableWithCurrentGates;
+    @FXML private TableView<GroupGate> tableWithRemainingGates;
+    private ObservableList<GroupGate> currentGroupGates;
     //-------------------------------------------------------------------
     
     private GuiDataContainer dataContainer;
