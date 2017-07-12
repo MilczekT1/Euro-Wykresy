@@ -33,7 +33,7 @@ final class DBGroupManager {
         return instance;
     }
     public void connectIfNull() {
-        if (DBGroupManager.getInstance() != null) {
+        if (connection != null) {
             ;
         }
         else{
