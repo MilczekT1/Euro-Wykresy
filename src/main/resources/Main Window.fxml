@@ -10,6 +10,7 @@
 <?import com.jfoenix.controls.JFXTextField?>
 <?import com.jfoenix.controls.JFXTimePicker?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
@@ -48,7 +49,7 @@
                         </Label>
                         <JFXPasswordField fx:id="login_Password" alignment="CENTER" layoutX="80.0" layoutY="60.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Hasło (min 6 znaków)" />
                         <JFXTextField fx:id="login_Login" alignment="CENTER" layoutX="80.0" layoutY="26.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" promptText="Imie_Nazwisko" />
-                        <JFXButton alignment="CENTER" layoutX="136.0" layoutY="103.0" onMouseClicked="#loginUser" style="-fx-border-color: grey;" text="Zaloguj">
+                        <JFXButton alignment="CENTER" layoutX="136.0" layoutY="103.0" onMouseClicked="#loginUserAndSetGuiData" style="-fx-border-color: grey;" text="Zaloguj">
                             <font>
                                 <Font size="18.0" />
                             </font>
@@ -94,36 +95,35 @@
     </Tab>
     <Tab fx:id="chartsTab" closable="false" text="Wykresy">
         <SplitPane dividerPositions="0.2975" prefHeight="276.0" prefWidth="364.0">
-            <AnchorPane maxWidth="300.0" minHeight="-Infinity" minWidth="-Infinity">
-                <TitledPane maxWidth="300.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="575.0" prefWidth="250.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="100.0">
-                        <Label layoutX="65.0" layoutY="403.0" text="Dodaj do wykresu" />
-                        <Label layoutX="63.0" layoutY="459.0" text="Usuń z wykresu" />
-                        <Label layoutX="38.0" layoutY="58.0" text="Punkt Początkowy">
+            <AnchorPane maxWidth="230.0" minHeight="-Infinity" minWidth="-Infinity">
+                <TitledPane maxWidth="280.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="575.0" prefWidth="250.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <AnchorPane maxWidth="280.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="100.0">
+                        <Label layoutX="15.0" layoutY="50.0" text="Od:">
                             <font>
                                 <Font size="17.0" />
                             </font>
                         </Label>
-                        <Label layoutX="50.0" layoutY="178.0" text="Punkt Końcowy">
+                        <Label layoutX="15.0" layoutY="135.0" text="Do:">
                             <font>
                                 <Font size="17.0" />
                             </font>
                         </Label>
-                        <JFXTimePicker fx:id="startTimePicker" layoutX="25.0" layoutY="80.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Czas początkowy" />
-                        <JFXTimePicker fx:id="endTimePicker" defaultColor="#423cee" layoutX="25.0" layoutY="200.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Czas Końcowy" />
-                        <JFXDatePicker fx:id="startDatePicker" layoutX="25.0" layoutY="120.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Dzień początkowy" />
-                        <JFXDatePicker fx:id="endDatePicker" defaultColor="#423cee" layoutX="25.0" layoutY="240.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Dzień Końcowy" />
+                        <JFXTimePicker fx:id="startTimePicker" layoutX="15.0" layoutY="70.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Czas początkowy" />
+                        <JFXTimePicker fx:id="endTimePicker" defaultColor="#423cee" layoutX="15.0" layoutY="155.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Czas Końcowy" />
+                        <JFXDatePicker fx:id="startDatePicker" layoutX="15.0" layoutY="100.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Dzień początkowy" />
+                        <JFXDatePicker fx:id="endDatePicker" defaultColor="#423cee" layoutX="15.0" layoutY="185.0" minHeight="-Infinity" minWidth="-Infinity" prefWidth="180.0" promptText="Dzień Końcowy" />
                         <JFXTabPane layoutX="116.0" layoutY="435.0" prefWidth="88.0" />
-                        <JFXButton fx:id="loadDataButton" buttonType="RAISED" layoutX="34.0" layoutY="274.0" onMouseClicked="#importChartData" ripplerFill="#0bdb38" text="Załaduj Dane" textFill="#da1313" underline="true">
+                        <JFXButton fx:id="loadDataButton" buttonType="RAISED" layoutX="15.0" layoutY="221.0" onMouseClicked="#importChartData" ripplerFill="#0bdb38" text="Załaduj Dane" textFill="#da1313" underline="true">
                             <font>
                                 <Font size="24.0" />
                             </font>
                         </JFXButton>
-                        <JFXProgressBar fx:id="progressBar" accessibleRole="INCREMENT_BUTTON" layoutX="11.0" layoutY="329.0" prefHeight="37.0" prefWidth="160.0" progress="0.0" />
-                        <ProgressIndicator fx:id="progressIndicator" layoutX="177.0" layoutY="322.0" prefHeight="63.0" prefWidth="57.0" progress="0.0" style="-fx-progress-color: green;" />
-                  <JFXComboBox fx:id="comboOnChartGates" layoutX="25.0" layoutY="476.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="190.0" promptText="Usuń z wykresu" />
-                  <JFXComboBox fx:id="comboChooseGroup" layoutX="25.0" layoutY="15.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="190.0" promptText="Wybierz grupę" />
-                  <JFXComboBox fx:id="comboNotOnChartGates" layoutX="25.0" layoutY="420.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="190.0" promptText="Usuń z wykresu" />
+                        <JFXProgressBar fx:id="progressBar" accessibleRole="INCREMENT_BUTTON" layoutX="15.0" layoutY="270.0" prefHeight="37.0" prefWidth="160.0" progress="0.0" style="-fx-border-radius: 300;" />
+                        <ProgressIndicator fx:id="progressIndicator" layoutX="177.0" layoutY="260.0" prefHeight="63.0" prefWidth="57.0" progress="0.0" style="-fx-progress-color: green;" />
+                  <JFXComboBox fx:id="comboOnChartGates" layoutX="15.0" layoutY="400.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="190.0" promptText="Usuń z wykresu" />
+                  <JFXComboBox fx:id="comboChooseGroup" layoutX="15.0" layoutY="10.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="190.0" promptText="Wybierz grupę" />
+                  <JFXComboBox fx:id="comboNotOnChartGates" layoutX="15.0" layoutY="370.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="190.0" promptText="Dodaj do wykresu" />
+                  <ColorPicker layoutX="41.0" layoutY="467.0" />
                     </AnchorPane>
                 </TitledPane>
             </AnchorPane>
