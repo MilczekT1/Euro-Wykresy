@@ -13,6 +13,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Paint;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.data.xy.XYDataset;
 
 import sample.Exceptions.GuiAccessException;
@@ -122,12 +123,11 @@ public final class Controller implements Initializable {
     @FXML private JFXPasswordField register_RepeatedPassword;
     @FXML private Label register_Label;
     @FXML
-    public void loginUser() {
+    public void loginUserAndSetGuiData() {
         String login = login_Login.getText();
         String password = login_Password.getText();
         login_Label.setText("");
         DBAuthenticator.getInstance().connectIfNull();
-        DBGroupManager.getInstance().connectIfNull();
         if (DBAuthenticator.tryToLoginAndReturnAccessType(login, DBAuthenticator.hashPassword(password), dataContainer)) {
             accessLevel = dataContainer.getAccessLevel();
             login_Label.setTextFill(Paint.valueOf("green"));
@@ -137,10 +137,18 @@ public final class Controller implements Initializable {
             } else {
                 groupsTab.setDisable(true);
             }
+            //Init gui data
+            DBGroupManager.getInstance().connectIfNull();
+            addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
+            addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
+            addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
+            
             chartsTab.setDisable(false);
             loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
             login_Login.clear();
             login_Password.clear();
+            
+            DBAuthenticator.getInstance().closeConnection();
         } else {
             login_Label.setTextFill(Paint.valueOf("red"));
             login_Label.setText("Nieudane logowanie");
@@ -293,13 +301,14 @@ public final class Controller implements Initializable {
     
         ////////////////////////TODO: CHARTS
         
-        xyAnalogDataset = Chart.createDefaultDataset();
-        xyDigitalDataset = Chart.createDefaultDataset();
+        xyAnalogDataset = Chart.createEmptyDataset();
+        xyDigitalDataset = Chart.createEmptyDataset();
         analogChart = Chart.createChart(xyAnalogDataset, "analog", "cisnienie");
+        analogChart.getXYPlot().getDomainAxis().setAutoRange(true);
         digitalChart = Chart.createChart(xyDigitalDataset, "cyfrowy", "parowki");
+        digitalChart.getXYPlot().getDomainAxis().setAutoRange(true);
         
         topChartViewer = new ChartViewer(analogChart);
-    
         bottomChartViewer = new ChartViewer(digitalChart);
         
         
@@ -342,15 +351,6 @@ public final class Controller implements Initializable {
         tableWithCurrentGates.setDisable(true);
     }
     private void initListeners() {
-    
-        groupsTab.setOnSelectionChanged((e) -> {
-            tableWithRemainingGates.getItems().clear();
-            tableWithRemainingGates.getItems().addAll(DBGroupManager.dbGetAllGates());
-            
-            addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
-            addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
-            addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
-        });
         
         //groups
         tableWithRemainingGates.setRowFactory(tableView -> {
@@ -453,7 +453,7 @@ public final class Controller implements Initializable {
                 comboChooseGroup.getSelectionModel().clearSelection();
                 listToEdit.clear();
                 listToChoose.clear();
-        
+                
                 List<String> allExistingGroupNames = DBGroupManager.dbGetAllExistingGroupNames();
                 addComboBoxOptionsFromList(comboMenuEdit, listToEdit, allExistingGroupNames);
                 addComboBoxOptionsFromList(comboGroupToDelete, listToEdit);
@@ -488,11 +488,12 @@ public final class Controller implements Initializable {
             progressBar.setProgress(0);
             progressIndicator.setProgress(0);
             //Clear charts
-            analogChart.getXYPlot().setDataset(null);
-            digitalChart.getXYPlot().setDataset(null);
+            //TODO: check
+            analogChart.getXYPlot().setDataset(Chart.createEmptyDataset());
+            digitalChart.getXYPlot().setDataset(Chart.createEmptyDataset());
         });
         
-        // do dodania na wykresu
+        // Add gateData to chart
         comboNotOnChartGates.setOnHiding((e) -> {
             if (comboNotOnChartGates.getSelectionModel().getSelectedItem() != null) {
                 String selectedGateToAdd = comboNotOnChartGates.getSelectionModel().getSelectedItem().toString();
@@ -500,13 +501,13 @@ public final class Controller implements Initializable {
                 String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
                 for (GateData gateData : GuiDataContainer.getAllChartData()) {
                     if (gateData.getGateId().equals(gateId)) {
-                        //TODO: wrzucic dane na wykres na podstawie gateId
-                        xyAnalogDataset = Chart.putGateValues(gateData);
-                        //analogChart = Chart.createChart(xyAnalogDataset, "analog", "lol"/*TODO!*/);
-                        analogChart.getXYPlot().setDataset(xyAnalogDataset);
-                        //analogChart = Chart.createChart(xyAnalogDataset,"analog", "cisnienie");
-                        //topChartViewer.setChart(analogChart);
-                        Runtime.getRuntime().gc();
+                        //TODO clean code
+                        int actualAmount = analogChart.getXYPlot().getDatasetCount();
+                        System.out.println(actualAmount);
+                        int index = actualAmount;//(actualAmount > 0) ? (actualAmount + 1) : 0;
+                        dataContainer.getRenderersAndGateIdsOnChart().put(gateId, index);
+                        analogChart.getXYPlot().setDataset(index,Chart.putGateValues(gateData,selectedGateToAdd));
+                        analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
                         break;
                     }
                 }
@@ -521,12 +522,35 @@ public final class Controller implements Initializable {
             if (comboOnChartGates.getSelectionModel().getSelectedItem() != null) {
                 String selectedGateToRemove = comboOnChartGates.getSelectionModel().getSelectedItem().toString();
     
-                addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList,
-                                            Collections.singletonList(selectedGateToRemove));
+                String gateId = dataContainer.getGateIdUsingDescription(selectedGateToRemove);
+                Runtime.getRuntime().gc();
+    
+                xyAnalogDataset = Chart.createEmptyDataset();
+                analogChart = Chart.createChart(xyAnalogDataset, "analog", "cisnienie");
+                topChartViewer.setChart(analogChart);
+    
+                dataContainer.getRenderersAndGateIdsOnChart().clear();
+                int counter = 1;
+                for (Object x : comboOnChartGates.getItems()) {
+                    String selectedGateToAdd = x.toString();
+                    if (selectedGateToRemove.equals(selectedGateToAdd)) {
+                        continue;
+                    }
+                    for (GateData gateData : GuiDataContainer.getAllChartData()) {
+                        String GATEID = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
+                        if (gateData.getGateId().equals(GATEID)) {
+                            int actualAmount = analogChart.getXYPlot().getDatasetCount();
+                            System.out.println(actualAmount);
+                            int index = actualAmount;//(actualAmount > 0) ? (actualAmount + 1) : 0;
+                            dataContainer.getRenderersAndGateIdsOnChart().put(GATEID, index);
+                            analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, selectedGateToAdd));
+                            analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
+                        }
+                    }
+                }
+                addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList, Collections.singletonList(selectedGateToRemove));
                 comboOnChartGates.getItems().remove(selectedGateToRemove);
                 comboOnChartGates.getSelectionModel().clearSelection();
-    
-                //TODO: remove data from chart
             }
         });
     }

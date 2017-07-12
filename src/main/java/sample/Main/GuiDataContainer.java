@@ -1,9 +1,9 @@
 package sample.Main;
 import lombok.Data;
-import org.omg.CORBA.DoubleHolder;
 import org.omg.CORBA.IntHolder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 // Container for logic variable in Controller
@@ -13,6 +13,7 @@ final class GuiDataContainer {
     private GuiDataContainer(){
         chartGroupGates = new LinkedList<>();
         allChartData = new ArrayList<>(20);
+        renderersAndGateIdsOnChart = new HashMap<>();
         amountOfProcessedThreads = new IntHolder(0);
     }
     public static GuiDataContainer getInstance(){
@@ -23,6 +24,7 @@ final class GuiDataContainer {
     protected LinkedList<GroupGate> chartGroupGates;
     
     protected static ArrayList<GateData> allChartData; //TODO: private?
+    private HashMap<String, Integer> renderersAndGateIdsOnChart;
     private IntHolder amountOfProcessedThreads;
     
     private String currentGroupName;
