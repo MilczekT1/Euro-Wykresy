@@ -187,18 +187,8 @@ public final class Controller implements Initializable {
     
     //-------------------------------------------------------------------GROUP MANAGER (RIGHT)
     @FXML private TableView<GroupGate> tableWithCurrentGates;
-    private TableColumn<GroupGate, String> currentGateDescription;
-    private TableColumn<GroupGate, String> currentShortDescription;
-    private TableColumn<GroupGate, String> currentGateType;
-    private TableColumn<GroupGate, String> currentGateMeasureType;
-    private TableColumn<GroupGate, String> currentGateId;
     private ObservableList<GroupGate> currentGroupGates;
     @FXML private TableView<GroupGate> tableWithRemainingGates;
-    private TableColumn<GroupGate, String> remainingGateDescription;
-    private TableColumn<GroupGate, String> remainingShortDescription;
-    private TableColumn<GroupGate, String> remainingGateType;
-    private TableColumn<GroupGate, String> remainingGateMeasureType;
-    private TableColumn<GroupGate, String> remainingGateId;
     //-------------------------------------------------------------------GROUP MANAGER (LEFT)
     @FXML private CheckBox addGroupChecker;
     @FXML private CheckBox editGroupChecker;
@@ -305,19 +295,18 @@ public final class Controller implements Initializable {
         comboNotOnChartGates.setDisable(true);
         loadDataButton.setDisable(true);
     }
-    
     private void initTables() {
-        currentGateDescription = new TableColumn<>("Description");
-        currentShortDescription = new TableColumn("ShortDescription");
-        currentGateType = new TableColumn("GateType");
-        currentGateMeasureType = new TableColumn("MeasureType");
-        currentGateId = new TableColumn<>("GateId");
+        TableColumn<GroupGate, String> currentGateDescription = new TableColumn<>("Description");
+        TableColumn<GroupGate, String> currentShortDescription = new TableColumn("ShortDescription");
+        TableColumn<GroupGate, String> currentGateType = new TableColumn("GateType");
+        TableColumn<GroupGate, String> currentGateMeasureType = new TableColumn("MeasureType");
+        TableColumn<GroupGate, String> currentGateId = new TableColumn<>("GateId");
         
-        remainingGateDescription = new TableColumn<>("Description");
-        remainingShortDescription = new TableColumn("ShortDescription");
-        remainingGateType = new TableColumn("GateType");
-        remainingGateMeasureType = new TableColumn("MeasureType");
-        remainingGateId = new TableColumn<>("GateId");
+        TableColumn<GroupGate, String> remainingGateDescription = new TableColumn<>("Description");
+        TableColumn<GroupGate, String> remainingShortDescription = new TableColumn("ShortDescription");
+        TableColumn<GroupGate, String> remainingGateType = new TableColumn("GateType");
+        TableColumn<GroupGate, String> remainingGateMeasureType = new TableColumn("MeasureType");
+        TableColumn<GroupGate, String> remainingGateId = new TableColumn<>("GateId");
         
         currentGateDescription.setCellValueFactory(new PropertyValueFactory<>("Description"));
         currentGateId.setCellValueFactory(new PropertyValueFactory<>("GateId"));
@@ -337,15 +326,12 @@ public final class Controller implements Initializable {
         tableWithCurrentGates.setDisable(true);
     }
     private void initCharts(){
-    
         createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
         createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
-    
-        //topChartViewer = new ChartViewer(analogChart);
-        //bottomChartViewer = new ChartViewer(analogChart);
         
         topChartViewer.prefHeightProperty().bind(topChartPane.heightProperty());
         topChartPane.getChildren().add(topChartViewer);
+        
         bottomChartViewer.prefHeightProperty().bind(bottomChartPane.heightProperty());
         bottomChartPane.getChildren().add(bottomChartViewer);
     }
@@ -510,7 +496,6 @@ public final class Controller implements Initializable {
                 addComboBoxOptionsFromList(comboOnChartGates, gatesOnChartList, Collections.singletonList(selectedGateToAdd));
                 comboNotOnChartGates.getItems().remove(selectedGateToAdd);
                 comboNotOnChartGates.getSelectionModel().clearSelection();
-                Runtime.getRuntime().gc();
             }
         });
         // do usuniecia wykresu
@@ -544,31 +529,6 @@ public final class Controller implements Initializable {
         });
     }
     
-    private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String> newOptions) {
-        list.addAll(newOptions);
-        list.sort(Comparator.naturalOrder());
-        box.setItems(list);
-    }
-    private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list) {
-        list.sort(Comparator.naturalOrder());
-        box.setItems(list);
-    }
-    
-    public void setProgress(double newProgress){
-        progressBar.setProgress(newProgress);
-        progressIndicator.setProgress(newProgress);
-    }
-    public synchronized void changeProgress() {
-        double oldProgress = progressBar.getProgress();
-        double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
-        double newProgress = oldProgress + (1 / denominator);
-        GuiDataContainer.getInstance().getAmountOfProcessedThreads().value +=1;
-        if (GuiDataContainer.getInstance().getAmountOfProcessedThreads().value == denominator){
-            newProgress = 1;
-            GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
-        }
-        setProgress(newProgress);
-    }
     private void createDefaultAnalogChartInAnalogChartViewer(String title, String measureType){
         xyAnalogDataset = null;
         analogChart = Chart.createChart(xyAnalogDataset, title, measureType);
@@ -586,5 +546,30 @@ public final class Controller implements Initializable {
             bottomChartViewer.setChart(digitalChart);
         else
             bottomChartViewer = new ChartViewer(digitalChart);
+    }
+    
+    private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String> newOptions) {
+        list.addAll(newOptions);
+        list.sort(Comparator.naturalOrder());
+        box.setItems(list);
+    }
+    private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list) {
+        list.sort(Comparator.naturalOrder());
+        box.setItems(list);
+    }
+    public void setProgress(double newProgress){
+        progressBar.setProgress(newProgress);
+        progressIndicator.setProgress(newProgress);
+    }
+    public synchronized void changeProgress() {
+        double oldProgress = progressBar.getProgress();
+        double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
+        double newProgress = oldProgress + (1 / denominator);
+        GuiDataContainer.getInstance().getAmountOfProcessedThreads().value +=1;
+        if (GuiDataContainer.getInstance().getAmountOfProcessedThreads().value == denominator){
+            newProgress = 1;
+            GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
+        }
+        setProgress(newProgress);
     }
 }
