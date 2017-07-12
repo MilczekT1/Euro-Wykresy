@@ -501,10 +501,7 @@ public final class Controller implements Initializable {
                 String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
                 for (GateData gateData : GuiDataContainer.getAllChartData()) {
                     if (gateData.getGateId().equals(gateId)) {
-                        //TODO clean code
-                        int actualAmount = analogChart.getXYPlot().getDatasetCount();
-                        System.out.println(actualAmount);
-                        int index = actualAmount;//(actualAmount > 0) ? (actualAmount + 1) : 0;
+                        int index = analogChart.getXYPlot().getDatasetCount();
                         dataContainer.getRenderersAndGateIdsOnChart().put(gateId, index);
                         analogChart.getXYPlot().setDataset(index,Chart.putGateValues(gateData,selectedGateToAdd));
                         analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
@@ -539,9 +536,7 @@ public final class Controller implements Initializable {
                     for (GateData gateData : GuiDataContainer.getAllChartData()) {
                         String GATEID = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
                         if (gateData.getGateId().equals(GATEID)) {
-                            int actualAmount = analogChart.getXYPlot().getDatasetCount();
-                            System.out.println(actualAmount);
-                            int index = actualAmount;//(actualAmount > 0) ? (actualAmount + 1) : 0;
+                            int index = analogChart.getXYPlot().getDatasetCount();
                             dataContainer.getRenderersAndGateIdsOnChart().put(GATEID, index);
                             analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, selectedGateToAdd));
                             analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
