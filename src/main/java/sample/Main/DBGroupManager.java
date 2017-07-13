@@ -19,39 +19,42 @@ import java.util.List;
 import java.util.logging.Level;
 
 final class DBGroupManager {
-    private static final String DB = "jdbc:sqlserver://"
-                                             + Configurator.getCurrentSettings().getProperty("Server-Adress");
+    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress");
     private static final String USER = Configurator.getCurrentSettings().getProperty("User");
     private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password");
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static Connection connection;
+    
     private static DBGroupManager instance = new DBGroupManager();
-    
-    private DBGroupManager(){}
-    
     public static DBGroupManager getInstance() {
         return instance;
     }
-    public void connectIfNull() {
-        if (connection != null) {
-            ;
-        }
-        else{
-            try {
-                Class.forName(DRIVER).newInstance();
-                connection = DriverManager.getConnection(DB, USER, USERPW);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-            } catch (SQLException e) {
-                MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
-                System.exit(1);
-            }
+    private DBGroupManager(){}
     
-            try {
-                createTablesIfNotExists();
-            } catch (SQLException e) {
-                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+    public void connectIfNullOrClosed() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                ;
             }
+            else{
+                try {
+                    Class.forName(DRIVER).newInstance();
+                    connection = DriverManager.getConnection(DB, USER, USERPW);
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
+                } catch (SQLException e) {
+                    MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
+                    System.exit(1);
+                }
+        
+                try {
+                    createTablesIfNotExists();
+                } catch (SQLException e) {
+                    MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
     private void createTablesIfNotExists() throws SQLException {
@@ -72,7 +75,6 @@ final class DBGroupManager {
             }
             for (String fromFileQuery: queries)
                 executeCreateIfNotExists(fromFileQuery, statement);
-            
         } catch (FileNotFoundException e) {
             MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Create_Groups.sql");
         } catch(IOException e) {
@@ -240,6 +242,7 @@ final class DBGroupManager {
         }
     }
     static boolean dbDeleteGroupUsingGroupId(String groupId){
+        //TODO: autocommit
         String sql = "USE wizualizacja2;" +
                              "DELETE FROM KONRAD_GRUPY " +
                              "WHERE Id_Grupy = ?; ";
@@ -261,25 +264,40 @@ final class DBGroupManager {
             return false;
         }
     }
-    static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId){
+    static void dbRemoveAllGatesFromGroup( String groupId) throws SQLException{
+        String delSQL = "USE wizualizacja2;" +
+                                "DELETE FROM KONRAD_BRAMKI " +
+                                "WHERE Id_Grupy = ?;";
+        boolean autoCommitStatus = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        @Cleanup
+        PreparedStatement preparedStatement = connection.prepareStatement(delSQL);
+        preparedStatement.setString(1, groupId);
+        preparedStatement.execute();
+        
+        connection.commit();
+        connection.setAutoCommit(autoCommitStatus);
+    }
+    static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId) throws SQLException{
         String findSQL = "USE wizualizacja2;" +
                                    "SELECT * FROM Slownik WHERE gateId=?";
         String insertSQL = "USE wizualizacja2;" +
                                    "INSERT INTO KONRAD_BRAMKI VALUES (?,?)";
-        try {
-            @Cleanup
-            PreparedStatement preparedStatement = connection.prepareStatement(findSQL);
-            preparedStatement.setString(1, gateId);
-            @Cleanup
-            ResultSet rs = preparedStatement.executeQuery();
-            if(rs.next()){
-                preparedStatement = connection.prepareStatement(insertSQL);
-                preparedStatement.setString(1, groupId);
-                preparedStatement.setString(2, gateId);
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+        
+        boolean autoCommitStatus = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        @Cleanup
+        PreparedStatement preparedStatement = connection.prepareStatement(findSQL);
+        preparedStatement.setString(1, gateId);
+        @Cleanup
+        ResultSet rs = preparedStatement.executeQuery();
+        if(rs.next()){
+            preparedStatement = connection.prepareStatement(insertSQL);
+            preparedStatement.setString(1, groupId);
+            preparedStatement.setString(2, gateId);
+            preparedStatement.executeUpdate();
         }
+        connection.commit();
+        connection.setAutoCommit(autoCommitStatus);
     }
 }
