@@ -10,20 +10,17 @@ import java.util.LinkedList;
 @Data
 final class GuiDataContainer {
     private static GuiDataContainer instance = new GuiDataContainer();
-    private GuiDataContainer(){
-        chartGroupGates = new LinkedList<>();
-        allChartData = new ArrayList<>(20);
-        renderersAndGateIdsOnChart = new HashMap<>();
-        amountOfProcessedThreads = new IntHolder(0);
-    }
     public static GuiDataContainer getInstance(){
         return instance;
     }
+    private GuiDataContainer(){
+        chartGroupGates = new LinkedList<>();
+        allChartData = new ArrayList<>(20);
+        amountOfProcessedThreads = new IntHolder(0);
+    }
     
     protected LinkedList<GroupGate> chartGroupGates;
-    
     private static ArrayList<GateData> allChartData;
-    private HashMap<String, Integer> renderersAndGateIdsOnChart;
     private IntHolder amountOfProcessedThreads;
     
     private String currentGroupName;
@@ -37,6 +34,15 @@ final class GuiDataContainer {
         for (GroupGate gate: chartGroupGates){
             if (gate.getDescription().equals(description)){
                 return gate.getGateId();
+            }
+        }
+        //exception?
+        return null;
+    }
+    String getGateTypeUsingDescription(String description){
+        for (GroupGate gate: chartGroupGates){
+            if (gate.getDescription().equals(description)){
+                return gate.getGateType();
             }
         }
         //exception?
