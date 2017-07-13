@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 final class DBAuthenticator {
-    private static final String DB = "jdbc:sqlserver://"
-                                             + Configurator.getCurrentSettings().getProperty("Server-Adress");
+    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress");
     private static final String USER = Configurator.getCurrentSettings().getProperty("User");
     private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password");
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
@@ -34,23 +33,27 @@ final class DBAuthenticator {
     public static DBAuthenticator getInstance() {
         return instance;
     }
-    public void connectIfNull() {
-        if (connection != null) {
-            ;
-        }
-        else{
-            try {
-                Class.forName(DRIVER).newInstance();
-                connection = DriverManager.getConnection(DB, USER, USERPW);
-            } catch (InstantiationException | IllegalAccessException | SQLException | ClassNotFoundException e) {
-                MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
+    public void connectIfNullOrClosed() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                ;
             }
-    
-            try {
-                createTablesIfNotExists();
-            } catch (SQLException e) {
-                MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
+            else{
+                try {
+                    Class.forName(DRIVER).newInstance();
+                    connection = DriverManager.getConnection(DB, USER, USERPW);
+                } catch (InstantiationException | IllegalAccessException | SQLException | ClassNotFoundException e) {
+                    MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
+                }
+        
+                try {
+                    createTablesIfNotExists();
+                } catch (SQLException e) {
+                    MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
     public void closeConnection(){
