@@ -5,6 +5,8 @@ import com.jfoenix.controls.*;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -68,7 +70,7 @@ public final class Controller implements Initializable {
     
     public void importChartData() {
         Runtime.getRuntime().gc();
-        LocalDate startDate = LocalDate.of(2017,1,1); //startDatePicker.getValue();
+        LocalDate startDate = LocalDate.of(2017,2,1); //startDatePicker.getValue();
         LocalTime startTime = LocalTime.of(12,0); //startTimePicker.getValue();
         LocalDate endDate = LocalDate.of(2017,3,1); //endDatePicker.getValue();
         LocalTime endTime = LocalTime.of(12,0); //endTimePicker.getValue();
@@ -130,7 +132,7 @@ public final class Controller implements Initializable {
         String login = login_Login.getText();
         String password = login_Password.getText();
         login_Label.setText("");
-        DBAuthenticator.getInstance().connectIfNull();
+        DBAuthenticator.getInstance().connectIfNullOrClosed();
         if (DBAuthenticator.tryToLoginAndReturnAccessType(login, DBAuthenticator.hashPassword(password), dataContainer)) {
             accessLevel = dataContainer.getAccessLevel();
             login_Label.setTextFill(Paint.valueOf("green"));
@@ -141,7 +143,7 @@ public final class Controller implements Initializable {
                 groupsTab.setDisable(true);
             }
             //Init gui data
-            DBGroupManager.getInstance().connectIfNull();
+            DBGroupManager.getInstance().connectIfNullOrClosed();
             addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
             addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
             addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
@@ -166,7 +168,7 @@ public final class Controller implements Initializable {
         register_Label.setText("");
         if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) && // Name_LastName
                     Pattern.matches("^\\S{6,100}", password)) {
-            DBAuthenticator.getInstance().connectIfNull();
+            DBAuthenticator.getInstance().connectIfNullOrClosed();
             if (DBAuthenticator.tryToRegister(login, DBAuthenticator.hashPassword(password))) {
                 register_Label.setDisable(false);
                 register_Label.setTextFill(Paint.valueOf("green"));
@@ -194,7 +196,11 @@ public final class Controller implements Initializable {
     @FXML private JFXComboBox comboGroupToDelete;
     @FXML private JFXComboBox comboMenuEdit;
     @FXML private JFXTextField newGroupTextField;
+    @FXML private JFXTextField filterTextField;
     private ObservableList<String> listToEdit;
+    private ObservableList<GroupGate> distinctGroupGates;
+    private FilteredList<GroupGate> filteredGroupGates;
+    private SortedList<GroupGate> sortedData;
     
     @FXML private TableView<GroupGate> tableWithCurrentGates;
     @FXML private TableView<GroupGate> tableWithRemainingGates;
@@ -206,7 +212,7 @@ public final class Controller implements Initializable {
     private String getNewGroupName() throws GuiAccessException {
         if (newGroupTextField.isDisabled())
             if (comboMenuEdit.getSelectionModel().getSelectedItem() != null) {
-                return comboMenuEdit.getSelectionModel().getSelectedItem().toString();
+                return getSelectedItemFrom(comboMenuEdit);
             } else {
                 throw new GuiAccessException("ERROR: nie wybrano grupy do edycji");
             }
@@ -269,10 +275,19 @@ public final class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         instance = this;
+        initVariables();
+        initTables();
+        initCharts();
+        initListeners();
+    }
+    private void initVariables(){
+        listToEdit                  = FXCollections.observableArrayList();
+        listToChoose                = FXCollections.observableArrayList();
+        distinctGroupGates          = FXCollections.observableArrayList();
+        gatesNotOnChartList         = FXCollections.observableArrayList();
+        gatesOnChartList            = FXCollections.observableArrayList();
         
         dataContainer = GuiDataContainer.getInstance();
-        listToEdit = FXCollections.observableArrayList();
-        listToChoose = FXCollections.observableArrayList();
         editGroupChecker.setSelected(true);
         newGroupTextField.setDisable(true);
     
@@ -283,12 +298,6 @@ public final class Controller implements Initializable {
         groupsTab.setDisable(true);
         chartsTab.setDisable(true);
     
-        initTables();
-        initCharts();
-        initListeners();
-    
-        gatesNotOnChartList = FXCollections.observableArrayList();
-        gatesOnChartList = FXCollections.observableArrayList();
         startTimePicker.setIs24HourView(true);
         endTimePicker.setIs24HourView(true);
         comboOnChartGates.setDisable(true);
@@ -345,30 +354,77 @@ public final class Controller implements Initializable {
             removeMenuItem.setOnAction((e) -> {
                 GroupGate lastAddedGroupGate = tableWithRemainingGates.getItems().get(row.getIndex());
                 tableWithCurrentGates.getItems().add(lastAddedGroupGate);
-                tableWithRemainingGates.getItems().remove(row.getItem());
+                tableWithCurrentGates.sort();
+                //tableWithRemainingGates.getItems().remove(row.getItem());
+                
+                distinctGroupGates.remove(lastAddedGroupGate);
+                filteredGroupGates = new FilteredList<>(distinctGroupGates, p -> true);
+                sortedData = new SortedList<>(filteredGroupGates);
+                sortedData.comparatorProperty().bind(tableWithRemainingGates.comparatorProperty());
+                tableWithRemainingGates.setItems(sortedData);
+                tableWithRemainingGates.sort();
             });
             // Set context menu on row, but use a binding to make it only show for non-empty rows:
             row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
             return row;
         });
-        tableWithCurrentGates.setRowFactory(tableView -> {
+        tableWithCurrentGates.setRowFactory((TableView<GroupGate> tableView) -> {
             final TableRow<GroupGate> row = new TableRow<>();
             final ContextMenu contextMenu = new ContextMenu();
             final MenuItem removeMenuItem = new MenuItem("Usuń z grupy");
             contextMenu.getItems().add(removeMenuItem);
             removeMenuItem.setOnAction((e) -> {
                 GroupGate lastRemovedGroupGate = tableWithCurrentGates.getItems().get(row.getIndex());
-                tableWithRemainingGates.getItems().add(lastRemovedGroupGate);
                 tableWithCurrentGates.getItems().remove(row.getItem());
                 tableWithCurrentGates.sort();
+                
+                List<GroupGate> groupGates = tableWithCurrentGates.getItems();
+                groupGates.remove(lastRemovedGroupGate);
+                if (groupGates != null) {
+                    currentGroupGates = FXCollections.observableList(groupGates);
+        
+                    distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
+                    distinctGroupGates.removeAll(currentGroupGates);
+                    filteredGroupGates = new FilteredList<>(distinctGroupGates, p -> true);
+        
+                    sortedData = new SortedList<>(filteredGroupGates);
+                    sortedData.comparatorProperty().bind(tableWithRemainingGates.comparatorProperty());
+                    tableWithCurrentGates.setItems(currentGroupGates);
+                    tableWithRemainingGates.setItems(sortedData);
+                }
             });
             // Set context menu on row, but use a binding to make it only show for non-empty rows:
             row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
             return row;
         });
+    
+        filterTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredGroupGates.setPredicate(groupGate -> {
+                // If filter text is empty, display all persons.
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                
+                if (groupGate.getDescription().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches description.
+                } else if (groupGate.getShortDescription().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches short description.
+                } else if (groupGate.getGateId().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches gateId.
+                }
+                else if (groupGate.getGateType().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches gateType.
+                }
+                else if (groupGate.getMeasureType().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches measureType.
+                }
+                return false; // Does not match.
+            });
+        });
         
         deleteGroupButton.setOnMouseClicked(e1 ->{
-            String nameOfGroupToDelete = comboGroupToDelete.getSelectionModel().getSelectedItem().toString();
+            String nameOfGroupToDelete = getSelectedItemFrom(comboGroupToDelete);
             String groupId = DBGroupManager.dbGetGroupIdUsingGroupName(nameOfGroupToDelete);
             if (groupId != null){
                 if (DBGroupManager.dbDeleteGroupUsingGroupId(groupId)){
@@ -393,14 +449,14 @@ public final class Controller implements Initializable {
                 if (groupGates != null) {
                     currentGroupGates = FXCollections.observableList(groupGates);
     
-                    ObservableList<GroupGate> distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
+                    distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
                     distinctGroupGates.removeAll(currentGroupGates);
-    
-                    tableWithCurrentGates.getItems().clear();
-                    tableWithRemainingGates.getItems().clear();
-    
-                    tableWithCurrentGates.getItems().addAll(currentGroupGates);
-                    tableWithRemainingGates.getItems().addAll(distinctGroupGates);
+                    filteredGroupGates = new FilteredList<>(distinctGroupGates, p -> true);
+                    
+                    sortedData = new SortedList<>(filteredGroupGates);
+                    sortedData.comparatorProperty().bind(tableWithRemainingGates.comparatorProperty());
+                    tableWithCurrentGates.setItems(currentGroupGates);
+                    tableWithRemainingGates.setItems(sortedData);
                 } else {
                     tableWithCurrentGates.getItems().clear();
                 }
@@ -418,12 +474,15 @@ public final class Controller implements Initializable {
     
         confirmChangesButton.setOnMouseClicked((event) ->{
             try {
+                //TODO: batch
                 dataContainer.setGroupId(DBGroupManager.dbGetGroupIdUsingGroupName(getNewGroupName()));
+                DBGroupManager.dbRemoveAllGatesFromGroup(dataContainer.getGroupId());
                 for (GroupGate groupGate : tableWithCurrentGates.getItems()) {
                     // groupGate does not always contain groupId -> use dataContainer
                     DBGroupManager.dbInsertCurrentGatesIntoGroup(groupGate.getGateId(), dataContainer.getGroupId());
                 }
-            } catch (GuiAccessException e) {
+                ////dataContainer.getGateIdsToDeleteFromGroup().clear();
+            } catch (GuiAccessException | SQLException e) {
                 MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             }
         });
@@ -456,8 +515,8 @@ public final class Controller implements Initializable {
             gatesNotOnChartList.clear();
             gatesOnChartList.clear();
             
-            dataContainer.setChartGroupGates(DBGroupManager.dbGetAllGatesFromGroup(comboChooseGroup.getSelectionModel().getSelectedItem().toString()));
-            dataContainer.getRenderersAndGateIdsOnChart().clear();
+            dataContainer.setChartGroupGates(DBGroupManager.dbGetAllGatesFromGroup(
+                    getSelectedItemFrom(comboChooseGroup)));
             GuiDataContainer.getAllChartData().clear();
             
             ArrayList<String> groupGatesNames = new ArrayList<>();
@@ -470,8 +529,8 @@ public final class Controller implements Initializable {
             loadDataButton.setDisable(false);
             comboOnChartGates.setDisable(true);
             comboNotOnChartGates.setDisable(true);
-            
             setProgress(0);
+            
             //Clear charts
             createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
             createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
@@ -480,15 +539,13 @@ public final class Controller implements Initializable {
         // Add gateData to chart
         comboNotOnChartGates.setOnHiding((e) -> {
             if (comboNotOnChartGates.getSelectionModel().getSelectedItem() != null) {
-                String selectedGateToAdd = comboNotOnChartGates.getSelectionModel().getSelectedItem().toString();
-                
+                String selectedGateToAdd = getSelectedItemFrom(comboNotOnChartGates);
                 String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
+                String gateType = dataContainer.getGateTypeUsingDescription(selectedGateToAdd);
+                
                 for (GateData gateData : GuiDataContainer.getAllChartData()) {
                     if (gateData.getGateId().equals(gateId)) {
-                        int index = analogChart.getXYPlot().getDatasetCount();
-                        dataContainer.getRenderersAndGateIdsOnChart().put(gateId, index);
-                        analogChart.getXYPlot().setDataset(index,Chart.putGateValues(gateData,selectedGateToAdd));
-                        analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
+                        addDatasetAndStandardXYItemRendererToChart(gateType, selectedGateToAdd, gateData);
                         break;
                     }
                 }
@@ -501,23 +558,28 @@ public final class Controller implements Initializable {
         // do usuniecia wykresu
         comboOnChartGates.setOnHiding((e) -> {
             if (comboOnChartGates.getSelectionModel().getSelectedItem() != null) {
-                String selectedGateToRemove = comboOnChartGates.getSelectionModel().getSelectedItem().toString();
-    
-                createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
-    
-                dataContainer.getRenderersAndGateIdsOnChart().clear();
+                String selectedGateToRemove = getSelectedItemFrom(comboOnChartGates);
+                String gateTypeOfGateToRemove = dataContainer.getGateTypeUsingDescription(selectedGateToRemove);
+                
+                if (gateTypeOfGateToRemove.equals("A")){
+                    createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
+                } else if (gateTypeOfGateToRemove.equals("D")){
+                    createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
+                }
+                
                 for (Object x : comboOnChartGates.getItems()) {
                     String selectedGateToAdd = x.toString();
-                    if (selectedGateToRemove.equals(selectedGateToAdd)) {
-                        continue;
-                    }
+                    if (selectedGateToRemove.equals(selectedGateToAdd)) { continue; }
+                    
                     String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
+                    String gateTypeOfGateToAdd = dataContainer.getGateTypeUsingDescription(selectedGateToAdd);
                     for (GateData gateData : GuiDataContainer.getAllChartData()) {
                         if (gateData.getGateId().equals(gateId)) {
-                            int index = analogChart.getXYPlot().getDatasetCount();
-                            dataContainer.getRenderersAndGateIdsOnChart().put(gateId, index);
-                            analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, selectedGateToAdd));
-                            analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
+                            if (!gateTypeOfGateToAdd.equals(gateTypeOfGateToRemove)){
+                                break;
+                            } else{
+                                addDatasetAndStandardXYItemRendererToChart(gateTypeOfGateToAdd, selectedGateToAdd, gateData);
+                            }
                         }
                     }
                 }
@@ -557,19 +619,34 @@ public final class Controller implements Initializable {
         list.sort(Comparator.naturalOrder());
         box.setItems(list);
     }
-    public void setProgress(double newProgress){
-        progressBar.setProgress(newProgress);
-        progressIndicator.setProgress(newProgress);
+    private String getSelectedItemFrom(JFXComboBox combo){
+        return combo.getSelectionModel().getSelectedItem().toString();
+    }
+    private void addDatasetAndStandardXYItemRendererToChart(String gateType, String description, GateData gateData){
+        if (gateType.equals("A") || gateType.equals("S")) {
+            int index = analogChart.getXYPlot().getDatasetCount();
+            analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, description));
+            analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
+        } else if (gateType.equals("D")){
+            int index = digitalChart.getXYPlot().getDatasetCount();
+            digitalChart.getXYPlot().setDataset(index,Chart.putGateValues(gateData,description));
+            digitalChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
+        }
     }
     public synchronized void changeProgress() {
         double oldProgress = progressBar.getProgress();
         double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
         double newProgress = oldProgress + (1 / denominator);
-        GuiDataContainer.getInstance().getAmountOfProcessedThreads().value +=1;
+        dataContainer.getAmountOfProcessedThreads().value +=1;
         if (GuiDataContainer.getInstance().getAmountOfProcessedThreads().value == denominator){
             newProgress = 1;
             GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
         }
         setProgress(newProgress);
     }
+    private void setProgress(double newProgress){
+        progressBar.setProgress(newProgress);
+        progressIndicator.setProgress(newProgress);
+    }
+    
 }
