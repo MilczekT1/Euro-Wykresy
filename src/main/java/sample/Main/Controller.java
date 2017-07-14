@@ -16,6 +16,7 @@ import javafx.scene.paint.Paint;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.xy.XYDataset;
 
 import sample.Exceptions.GuiAccessException;
@@ -545,7 +546,11 @@ public final class Controller implements Initializable {
                 
                 for (GateData gateData : GuiDataContainer.getAllChartData()) {
                     if (gateData.getGateId().equals(gateId)) {
-                        addDatasetAndStandardXYItemRendererToChart(gateType, selectedGateToAdd, gateData);
+                        try {
+                            addDatasetAndStandardXYItemRendererToChart(gateType, selectedGateToAdd, gateData);
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
                         break;
                     }
                 }
@@ -567,18 +572,26 @@ public final class Controller implements Initializable {
                     createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
                 }
                 
+                String selectedGateToAdd;
+                String gateId;
+                String gateTypeOfGateToAdd;
                 for (Object x : comboOnChartGates.getItems()) {
-                    String selectedGateToAdd = x.toString();
+                    selectedGateToAdd = x.toString();
                     if (selectedGateToRemove.equals(selectedGateToAdd)) { continue; }
                     
-                    String gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
-                    String gateTypeOfGateToAdd = dataContainer.getGateTypeUsingDescription(selectedGateToAdd);
+                    gateId = dataContainer.getGateIdUsingDescription(selectedGateToAdd);
+                    gateTypeOfGateToAdd = dataContainer.getGateTypeUsingDescription(selectedGateToAdd);
+                    
                     for (GateData gateData : GuiDataContainer.getAllChartData()) {
                         if (gateData.getGateId().equals(gateId)) {
                             if (!gateTypeOfGateToAdd.equals(gateTypeOfGateToRemove)){
                                 break;
                             } else{
-                                addDatasetAndStandardXYItemRendererToChart(gateTypeOfGateToAdd, selectedGateToAdd, gateData);
+                                try {
+                                    addDatasetAndStandardXYItemRendererToChart(gateTypeOfGateToAdd, selectedGateToAdd, gateData);
+                                } catch (Exception e1) {
+                                    e1.printStackTrace();
+                                }
                             }
                         }
                     }
@@ -610,6 +623,9 @@ public final class Controller implements Initializable {
             bottomChartViewer = new ChartViewer(digitalChart);
     }
     
+    private String getSelectedItemFrom(JFXComboBox combo){
+        return combo.getSelectionModel().getSelectedItem().toString();
+    }
     private void addComboBoxOptionsFromList(ComboBox box, ObservableList<String> list, List<String> newOptions) {
         list.addAll(newOptions);
         list.sort(Comparator.naturalOrder());
@@ -619,18 +635,15 @@ public final class Controller implements Initializable {
         list.sort(Comparator.naturalOrder());
         box.setItems(list);
     }
-    private String getSelectedItemFrom(JFXComboBox combo){
-        return combo.getSelectionModel().getSelectedItem().toString();
-    }
-    private void addDatasetAndStandardXYItemRendererToChart(String gateType, String description, GateData gateData){
+    private void addDatasetAndStandardXYItemRendererToChart(String gateType, String description, GateData gateData) throws Exception {
         if (gateType.equals("A") || gateType.equals("S")) {
             int index = analogChart.getXYPlot().getDatasetCount();
-            analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, description));
+            analogChart.getXYPlot().setDataset(index, Chart.putGateValues(gateData, description, gateType));
             analogChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
         } else if (gateType.equals("D")){
             int index = digitalChart.getXYPlot().getDatasetCount();
-            digitalChart.getXYPlot().setDataset(index,Chart.putGateValues(gateData,description));
-            digitalChart.getXYPlot().setRenderer(index, new StandardXYItemRenderer());
+            digitalChart.getXYPlot().setDataset(index,Chart.putGateValues(gateData,description, gateType));
+            digitalChart.getXYPlot().setRenderer(index, new XYStepRenderer());
         }
     }
     public synchronized void changeProgress() {
