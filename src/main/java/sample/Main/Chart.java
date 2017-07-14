@@ -11,25 +11,26 @@ import java.sql.SQLException;
 import java.util.Date;
 
 class Chart {
-    public static XYDataset createEmptyDataset( ) {
+    static XYDataset createEmptyDataset( ) {
         TimeSeries series = new TimeSeries("empty");
         return new TimeSeriesCollection(series);
     }
-    public static XYDataset putGateValues(GateData gateData, String name){
+    static XYDataset putGateValues(GateData gateData, String name, String gateType) throws Exception {
         TimeSeries series = new TimeSeries(name);
         RegularTimePeriod time;
-        for(int i=0; i< gateData.getTimestamps().length; i++){
+        
+        for (int i = 0; i < gateData.getTimestamps().length; i++) {
             time = new Second(new Date(gateData.getTimestamps()[i]));
             series.addOrUpdate(time, gateData.getValues()[i]);
         }
         return new TimeSeriesCollection(series);
     }
     
-    public static JFreeChart createChart(XYDataset dataset,String title, String measureType) {
+    static JFreeChart createChart(XYDataset dataset,String title, String measureType) {
         return ChartFactory.createTimeSeriesChart(title,"Czas", measureType,dataset,true,true,false);
     }
     
-    public static CachedRowSet dbImportGateValues(String gateId, long start, long end) throws SQLException{
+    static CachedRowSet dbImportGateValues(String gateId, long start, long end) throws SQLException{
         String sql = "use e6_VfiTag;\n" +
                              "SELECT time, value FROM VfiTagNumHistory\n" +
                              "WHERE gateId = ? AND time BETWEEN ? AND ?;";
