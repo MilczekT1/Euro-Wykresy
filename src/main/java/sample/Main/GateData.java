@@ -1,10 +1,9 @@
 package sample.Main;
 
 import lombok.Getter;
+
 import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
-import java.util.stream.DoubleStream;
-import java.util.stream.LongStream;
 
 @Getter
 class GateData {
@@ -23,9 +22,8 @@ class GateData {
                 values[counter] = crs.getDouble("value");
                 counter++;
             }
-            //Runtime.getRuntime().gc();
         } catch (SQLException e) {
-            e.printStackTrace();//TODO: log it
+            e.printStackTrace(); //TODO: log it
         }
     }
     
