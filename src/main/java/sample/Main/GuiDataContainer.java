@@ -19,7 +19,7 @@ final class GuiDataContainer {
         amountOfProcessedThreads = new IntHolder(0);
     }
     
-    protected LinkedList<GroupGate> chartGroupGates;
+    LinkedList<GroupGate> chartGroupGates;
     private static ArrayList<GateData> allChartData;
     private IntHolder amountOfProcessedThreads;
     

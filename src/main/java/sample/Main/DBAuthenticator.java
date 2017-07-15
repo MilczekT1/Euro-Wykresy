@@ -99,7 +99,7 @@ final class DBAuthenticator {
         }
     }
     
-    public static Boolean tryToLoginAndReturnAccessType(String login, String password, GuiDataContainer gdc){
+    static Boolean tryToLoginAndReturnAccessType(String login, String password, GuiDataContainer gdc){
         String sql  = "USE wizualizacja2;" +
                               "SELECT * FROM KONRAD_UZYTKOWNICY WHERE Login=? AND Haslo=?";
         try {
@@ -122,7 +122,7 @@ final class DBAuthenticator {
             return false;
         }
     }
-    public static boolean tryToRegister(String login, String password) {
+    static boolean tryToRegister(String login, String password) {
         String sql  = "USE wizualizacja2;" +
                               "SELECT * FROM KONRAD_UZYTKOWNICY WHERE Login=?";
         try {
@@ -146,15 +146,5 @@ final class DBAuthenticator {
             MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
             return false;
         }
-    }
-    public static String hashPassword(String password){
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashArray = digest.digest(password.getBytes("UTF-8"));
-            return DatatypeConverter.printHexBinary(hashArray);
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
-        }
-        return null;
     }
 }

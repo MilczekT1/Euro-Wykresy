@@ -134,7 +134,7 @@ public final class Controller implements Initializable {
         String password = login_Password.getText();
         login_Label.setText("");
         DBAuthenticator.getInstance().connectIfNullOrClosed();
-        if (DBAuthenticator.tryToLoginAndReturnAccessType(login, DBAuthenticator.hashPassword(password), dataContainer)) {
+        if (DBAuthenticator.tryToLoginAndReturnAccessType(login, Utils.hashPassword(password), dataContainer)) {
             accessLevel = dataContainer.getAccessLevel();
             login_Label.setTextFill(Paint.valueOf("green"));
             login_Label.setText("Udane logowanie");
@@ -170,7 +170,7 @@ public final class Controller implements Initializable {
         if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) && // Name_LastName
                     Pattern.matches("^\\S{6,100}", password)) {
             DBAuthenticator.getInstance().connectIfNullOrClosed();
-            if (DBAuthenticator.tryToRegister(login, DBAuthenticator.hashPassword(password))) {
+            if (DBAuthenticator.tryToRegister(login, Utils.hashPassword(password))) {
                 register_Label.setDisable(false);
                 register_Label.setTextFill(Paint.valueOf("green"));
                 register_Label.setText("Udana rejestracja");

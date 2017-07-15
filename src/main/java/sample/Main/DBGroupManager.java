@@ -190,7 +190,7 @@ final class DBGroupManager {
             return null;
         }
     }
-    protected static GroupGate dbGetGateUsingGateId(String gateId){
+    static GroupGate dbGetGateUsingGateId(String gateId){
         try {
             String sql = "USE wizualizacja2 "
                                  + "SELECT gateId " +
