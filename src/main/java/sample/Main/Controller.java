@@ -133,32 +133,37 @@ public final class Controller implements Initializable {
         String login = login_Login.getText();
         String password = login_Password.getText();
         login_Label.setText("");
-        DBAuthenticator.getInstance().connectIfNullOrClosed();
-        if (DBAuthenticator.tryToLoginAndReturnAccessType(login, Utils.hashPassword(password), dataContainer)) {
-            accessLevel = dataContainer.getAccessLevel();
-            login_Label.setTextFill(Paint.valueOf("green"));
-            login_Label.setText("Udane logowanie");
-            if (accessLevel.equals(1)) {
-                groupsTab.setDisable(false);
+        try{
+            DBAuthenticator.getInstance().connectIfNullOrClosed();
+            if (DBAuthenticator.tryToLoginAndReturnAccessType(login, Utils.hashPassword(password), dataContainer)) {
+                accessLevel = dataContainer.getAccessLevel();
+                login_Label.setTextFill(Paint.valueOf("green"));
+                login_Label.setText("Udane logowanie");
+                if (accessLevel.equals(1)) {
+                    groupsTab.setDisable(false);
+                } else {
+                    groupsTab.setDisable(true);
+                }
+                //Init gui data
+                DBGroupManager.getInstance().connectIfNullOrClosed();
+                addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
+                addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
+                addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
+        
+                chartsTab.setDisable(false);
+                loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
+                login_Login.clear();
+                login_Password.clear();
+        
+                DBAuthenticator.getInstance().closeConnection();
             } else {
-                groupsTab.setDisable(true);
+                login_Label.setTextFill(Paint.valueOf("red"));
+                login_Label.setText("Nieudane logowanie");
+                login_Password.clear();
             }
-            //Init gui data
-            DBGroupManager.getInstance().connectIfNullOrClosed();
-            addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
-            addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
-            addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
-            
-            chartsTab.setDisable(false);
-            loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
-            login_Login.clear();
-            login_Password.clear();
-            
-            DBAuthenticator.getInstance().closeConnection();
-        } else {
-            login_Label.setTextFill(Paint.valueOf("red"));
-            login_Label.setText("Nieudane logowanie");
-            login_Password.clear();
+        }
+        catch(Exception e){
+            MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
         }
     }
     @FXML
@@ -166,22 +171,25 @@ public final class Controller implements Initializable {
         String login = register_Login.getText();
         String password = register_Password.getText();
         String repeatedPassword = register_RepeatedPassword.getText();
-        register_Label.setText("");
-        if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) && // Name_LastName
+        register_Label.setText("");// todo: remove?
+        register_Label.setDisable(false);
+        register_Label.setTextFill(Paint.valueOf("red"));
+        if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) &&
                     Pattern.matches("^\\S{6,100}", password)) {
-            DBAuthenticator.getInstance().connectIfNullOrClosed();
-            if (DBAuthenticator.tryToRegister(login, Utils.hashPassword(password))) {
-                register_Label.setDisable(false);
-                register_Label.setTextFill(Paint.valueOf("green"));
-                register_Label.setText("Udana rejestracja");
-            } else {
-                register_Label.setDisable(false);
-                register_Label.setTextFill(Paint.valueOf("red"));
+    
+            try {
+                DBAuthenticator.getInstance().connectIfNullOrClosed();
+                if (DBAuthenticator.tryToRegister(login, Utils.hashPassword(password))) {
+                    register_Label.setTextFill(Paint.valueOf("green"));
+                    register_Label.setText("Udana rejestracja");
+                } else {
+                    register_Label.setText("Nieudana próba rejestracji");
+                }
+            } catch (Exception e) {
                 register_Label.setText("Nieudana próba rejestracji");
+                MyLogger.getLogger().log(Level.SEVERE, Throwables.getStackTraceAsString(e).trim());
             }
         } else {
-            register_Label.setDisable(false);
-            register_Label.setTextFill(Paint.valueOf("red"));
             register_Label.setText("Nieprawidlowe dane!!");
         }
         register_Password.clear();
