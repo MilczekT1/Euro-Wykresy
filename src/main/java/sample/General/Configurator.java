@@ -14,8 +14,6 @@ public final class Configurator {
     private static Logger logger = MyLogger.getLogger();
     private static Configurator instance = new Configurator();
     private static Properties currentSettings;
-    private static Properties defaultSettings;
-    private static Boolean usingDefaultConfiguration;
     
     private Configurator(){
         File propertiesFile = new File("application.properties");
@@ -27,42 +25,73 @@ public final class Configurator {
         }
     }
     private static void setDefaultSettings(){
-        String adress = null;
+        String firstAdress = null;
+        String secondAdress = null;
         String user = null;
         String password = null;
-        String maxGatesAmount = null;
+        /*String paterekAdress = null;
+        String paterekUser = null;
+        String paterekPassword = null;*/
         Optional<String> result;
         
-        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 1/3: IP + port");
+        /*
+         * Paterek
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 1/3: IP + port do paterka");
         if (result.isPresent())
-            adress = result.get();
+            paterekAdress = result.get();
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono adresu ip i/lub portu");
             System.exit(1);
         }
-        
-        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 2/3: Nazwa użytkownika");
-        if (result.isPresent())
-            user = result.get();
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 2/3: Nazwa użytkownika do paterka");
+        if (result.isPresent()) {
+            paterekUser = result.get();
+        }
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono nazwy uzytkownika BD");
             System.exit(1);
         }
     
-        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia", "Krok 3/3: Haslo");
-        if (result.isPresent())
-            password = result.get();
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia", "Krok 3/3: Haslo do paterka");
+        if (result.isPresent()) {
+            paterekPassword = result.get();
+        }
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono hasla");
             System.exit(1);
         }
-        result = Utils.getStringFromDialog("Wydajnosc", "Wydajnosc", "Maksymalna liczba bramek na wykresie (1-19), zalecana <=15:");
+        */
+        
+        
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 1/4: IP + port");
+        if (result.isPresent())
+            firstAdress = result.get();
+        else {
+            logger.log(Level.CONFIG, "Nie wprowadzono adresu ip i/lub portu");
+            System.exit(1);
+        }
+        
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia", "Krok 2/4: drugie IP + port");
         if (result.isPresent()) {
-            maxGatesAmount = result.get();
-            if (!Pattern.matches("[1-9]|1[0-9]", maxGatesAmount)) {
-                logger.log(Level.CONFIG, "Nie wprowadzono poprawnej liczby  bramek");
-                System.exit(1);
-            }
+            secondAdress = result.get();
+        }
+        else {
+            logger.log(Level.CONFIG, "Nie wprowadzono adresu ip i/lub portu");
+            System.exit(1);
+        }
+    
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia","Krok 3/4: Nazwa użytkownika");
+        if (result.isPresent()) {
+            user = result.get();
+        }
+        else {
+            logger.log(Level.CONFIG, "Nie wprowadzono nazwy uzytkownika BD");
+            System.exit(1);
+        }
+    
+        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia", "Krok 4/4: Haslo");
+        if (result.isPresent()) {
+            password = result.get();
         }
         else {
             logger.log(Level.CONFIG, "Nie wprowadzono hasla");
@@ -70,15 +99,16 @@ public final class Configurator {
         }
         
         Properties defSettings = new Properties();
-        defSettings.setProperty("Server-Adress",adress);
         defSettings.setProperty("User", user);
         defSettings.setProperty("Password", password);
-        defSettings.setProperty("Max_Gates_Amount",maxGatesAmount);
-        usingDefaultConfiguration = false;
+        defSettings.setProperty("Server-Adress-1", firstAdress);
+        defSettings.setProperty("Server-Adress-2", secondAdress);
+        /*defSettings.setProperty("Paterek-User", paterekUser);
+        defSettings.setProperty("Paterek-Password", paterekPassword);
+        defSettings.setProperty("Paterek-Adress", paterekAdress);*/
         
         try {
             currentSettings =  (Properties) defSettings.clone();
-            defaultSettings = (Properties) defSettings.clone();
             @Cleanup
             FileOutputStream out = new FileOutputStream("application.properties");
             currentSettings.store(out, "Ustawienia programu");
@@ -93,13 +123,10 @@ public final class Configurator {
     }
     private static void importDefaultSettings(){
         try {
-            usingDefaultConfiguration = true;
-            defaultSettings = new Properties();
             currentSettings = new Properties();
             @Cleanup
             FileInputStream in = new FileInputStream("application.properties");
-            defaultSettings.load(in);
-            currentSettings = (Properties) defaultSettings.clone();
+            currentSettings.load(in);
         } catch (FileNotFoundException e) {
             logger.log(Level.SEVERE,"Nie znaleziono pliku konfiguracyjnego (prawdopodobnie usuniety recznie)");
             System.exit(1);
@@ -119,16 +146,6 @@ public final class Configurator {
         } catch (IOException e) {
             logger.log(Level.WARNING,"Nieudana proba zapisu pliku konfiguracyjnego");
         }
-    }
-// --Commented out by Inspection START (30/06/2017, 18:11):
-//    public void addProperty(String key, String value){
-//        currentSettings.setProperty(key, value);
-//        logger.log(Level.CONFIG, "application.properties dodano  " + key + ":" + value);
-//    }
-// --Commented out by Inspection STOP (30/06/2017, 18:11)
-    
-    public static Properties getDefaultSettings(){
-        return defaultSettings;
     }
     public static Properties getCurrentSettings(){
         return currentSettings;
