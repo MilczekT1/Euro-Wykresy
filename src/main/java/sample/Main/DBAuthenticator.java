@@ -2,6 +2,7 @@ package sample.Main;
 
 import com.google.common.base.Throwables;
 import lombok.Cleanup;
+import org.apache.commons.lang.ObjectUtils;
 import sample.General.Configurator;
 import sample.General.MyLogger;
 
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 final class DBAuthenticator {
-    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress");
+    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress-1");
     private static final String USER = Configurator.getCurrentSettings().getProperty("User");
     private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password");
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
@@ -30,9 +31,14 @@ final class DBAuthenticator {
     
     private DBAuthenticator(){}
     
-    public static DBAuthenticator getInstance() {
-        return instance;
+    public static DBAuthenticator getInstance() throws NullPointerException {
+        if (instance != null) {
+            return instance;
+        } else{
+            throw new NullPointerException("DBAuthenticator instance is null");
+        }
     }
+    
     public void connectIfNullOrClosed() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -56,6 +62,9 @@ final class DBAuthenticator {
             e.printStackTrace();
         }
     }
+    
+    
+    
     public void closeConnection(){
         try {
             if (!connection.isClosed()) {
