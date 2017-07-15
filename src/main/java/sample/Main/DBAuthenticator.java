@@ -38,43 +38,28 @@ final class DBAuthenticator {
             throw new NullPointerException("DBAuthenticator instance is null");
         }
     }
-    
-    public void connectIfNullOrClosed() {
+    public boolean isConnected(){
         try {
-            if (connection != null && !connection.isClosed()) {
-                ;
-            }
-            else{
-                try {
-                    Class.forName(DRIVER).newInstance();
-                    connection = DriverManager.getConnection(DB, USER, USERPW);
-                } catch (InstantiationException | IllegalAccessException | SQLException | ClassNotFoundException e) {
-                    MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
-                }
-        
-                try {
-                    createTablesIfNotExists();
-                } catch (SQLException e) {
-                    MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
-                }
-            }
+            return (connection != null && !connection.isClosed()) ? true : false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            return false;
         }
     }
+    public void connectIfNullOrClosed() throws Exception {
+        if (connection != null && !connection.isClosed()) {
+            ;
+        }
+        else {
+            Class.forName(DRIVER).newInstance();
+            connection = DriverManager.getConnection(DB, USER, USERPW);
     
-    
-    
-    public void closeConnection(){
-        try {
-            if (!connection.isClosed()) {
-                connection.close();
+            try {
+                createTablesIfNotExists();
+            } catch (SQLException e) {
+                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
-    
     private void createTablesIfNotExists() throws SQLException {
         @Cleanup
         Statement statement = connection.createStatement();
@@ -82,7 +67,7 @@ final class DBAuthenticator {
             Path path = Paths.get("src/main/resources/", "Create_Users.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
             List<String> queries = new LinkedList<>();
-    
+            
             StringBuilder foundQuery = new StringBuilder();
             for (String line : lines){
                 foundQuery.append(line);
@@ -105,6 +90,12 @@ final class DBAuthenticator {
             statement.execute(query);
         } catch (SQLException e) {
             // One of the scripts from "Create_Groups.sql" failed (because exists)
+        }
+    }
+    
+    public void closeConnection()throws SQLException{
+        if (!connection.isClosed()) {
+            connection.close();
         }
     }
     
