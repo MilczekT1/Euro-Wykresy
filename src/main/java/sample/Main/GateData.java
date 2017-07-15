@@ -26,8 +26,4 @@ class GateData {
             e.printStackTrace(); //TODO: log it
         }
     }
-    
-    public String getGateId() {
-        return gateId;
-    }
 }
