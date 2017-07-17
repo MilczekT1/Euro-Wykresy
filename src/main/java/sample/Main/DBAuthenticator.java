@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.logging.Level;
 
 final class DBAuthenticator {
-    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress-1");
-    private static final String USER = Configurator.getCurrentSettings().getProperty("User");
-    private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password");
+    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Treblinka-Adress-1");
+    private static final String USER = Configurator.getCurrentSettings().getProperty("User-Treblinka");
+    private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password-Treblinka");
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static Connection connection;
     private static DBAuthenticator instance = new DBAuthenticator();
@@ -46,7 +46,7 @@ final class DBAuthenticator {
         }
     }
     public void connectIfNullOrClosed() throws Exception {
-        if (connection != null && !connection.isClosed()) {
+        if (connection != null && !connection.isClosed() && connection.isValid(2000)) {
             ;
         }
         else {
@@ -100,8 +100,8 @@ final class DBAuthenticator {
     }
     
     static Boolean tryToLoginAndReturnAccessType(String login, String password, GuiDataContainer gdc){
-        String sql  = "USE wizualizacja2;" +
-                              "SELECT * FROM KONRAD_UZYTKOWNICY WHERE Login=? AND Haslo=?";
+        String sql  = "USE wizualizacja;" +
+                              "SELECT * FROM EW_Uzytkownicy WHERE Login=? AND Haslo=?";
         try {
             @Cleanup
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -123,8 +123,8 @@ final class DBAuthenticator {
         }
     }
     static boolean tryToRegister(String login, String password) {
-        String sql  = "USE wizualizacja2;" +
-                              "SELECT * FROM KONRAD_UZYTKOWNICY WHERE Login=?";
+        String sql  = "USE wizualizacja;" +
+                              "SELECT * FROM EW_Uzytkownicy WHERE Login=?";
         try {
             @Cleanup
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -134,8 +134,8 @@ final class DBAuthenticator {
             if (rs.next()){
                 return false;
             } else {
-                String insertSQL = "USE wizualizacja2;" +
-                                           "INSERT INTO KONRAD_UZYTKOWNICY(Login, Haslo) VALUES (?,?)";
+                String insertSQL = "USE wizualizacja;" +
+                                           "INSERT INTO EW_Uzytkownicy(Login, Haslo) VALUES (?,?)";
                 preparedStatement = connection.prepareStatement(insertSQL);
                 preparedStatement.setString(1,login);
                 preparedStatement.setString(2,password);
