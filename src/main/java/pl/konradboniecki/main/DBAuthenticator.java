@@ -1,30 +1,25 @@
-package sample.Main;
+package pl.konradboniecki.main;
 
 import com.google.common.base.Throwables;
 import lombok.Cleanup;
-import org.apache.commons.lang.ObjectUtils;
-import sample.General.Configurator;
-import sample.General.MyLogger;
+import pl.konradboniecki.general.Configurator;
+import pl.konradboniecki.general.MyLogger;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
 final class DBAuthenticator {
-    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Treblinka-Adress-1");
-    private static final String USER = Configurator.getCurrentSettings().getProperty("User-Treblinka");
-    private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password-Treblinka");
+    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Adress-Treblinka-1");
+    private static final String USER = Configurator.getCurrentSettings().getProperty("User-Treblinka-1");
+    private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password-Treblinka-1");
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static Connection connection;
     private static DBAuthenticator instance = new DBAuthenticator();
@@ -40,27 +35,24 @@ final class DBAuthenticator {
     }
     public boolean isConnected(){
         try {
-            return (connection != null && !connection.isClosed()) ? true : false;
+            return (connection != null && !connection.isClosed() && connection.isValid(3000)) ? true : false;
         } catch (SQLException e) {
             return false;
         }
     }
-    public void connectIfNullOrClosed() throws Exception {
-        if (connection != null && !connection.isClosed() && connection.isValid(2000)) {
-            ;
-        }
-        else {
+    void connect() throws Exception {
+        if (!isConnected()){
             Class.forName(DRIVER).newInstance();
             connection = DriverManager.getConnection(DB, USER, USERPW);
     
             try {
-                createTablesIfNotExists();
+                setUpStructuresIfNotExists();
             } catch (SQLException e) {
                 MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             }
         }
     }
-    private void createTablesIfNotExists() throws SQLException {
+    private void setUpStructuresIfNotExists() throws SQLException {
         @Cleanup
         Statement statement = connection.createStatement();
         try {
@@ -93,13 +85,13 @@ final class DBAuthenticator {
         }
     }
     
-    public void closeConnection()throws SQLException{
+    public void closeConnection() throws SQLException{
         if (!connection.isClosed()) {
             connection.close();
         }
     }
     
-    static Boolean tryToLoginAndReturnAccessType(String login, String password, GuiDataContainer gdc){
+    static Boolean tryToLogin(String login, String password, GuiDataContainer gdc){
         String sql  = "USE wizualizacja;" +
                               "SELECT * FROM EW_Uzytkownicy WHERE Login=? AND Haslo=?";
         try {
@@ -116,7 +108,6 @@ final class DBAuthenticator {
             else {
                 return false;
             }
-            
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.INFO,Throwables.getStackTraceAsString(e).trim());
             return false;
