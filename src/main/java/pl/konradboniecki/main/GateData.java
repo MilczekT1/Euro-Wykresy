@@ -1,4 +1,4 @@
-package sample.Main;
+package pl.konradboniecki.main;
 
 import lombok.Getter;
 

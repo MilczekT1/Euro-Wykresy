@@ -1,10 +1,10 @@
-package sample.Main;
+package pl.konradboniecki.main;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.time.*;
 import org.jfree.data.xy.XYDataset;
-import sample.General.Configurator;
+import pl.konradboniecki.general.Configurator;
 
 import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
