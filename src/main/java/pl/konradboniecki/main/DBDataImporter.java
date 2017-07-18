@@ -1,9 +1,9 @@
-package sample.Main;
+package pl.konradboniecki.main;
 
 import com.google.common.base.Throwables;
 import lombok.Cleanup;
-import sample.General.MyLogger;
-import sample.General.ThreadPool;
+import pl.konradboniecki.general.MyLogger;
+import pl.konradboniecki.general.ThreadPool;
 
 import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
