@@ -30,7 +30,7 @@ class TreblinkaSecond {
         if (instance != null) {
             return instance;
         } else{
-            throw new NullPointerException("DBAuthenticator instance is null");
+            throw new NullPointerException("TreblinkaSecond instance is null");
         }
     }
     

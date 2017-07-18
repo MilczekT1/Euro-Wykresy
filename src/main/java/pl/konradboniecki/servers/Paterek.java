@@ -30,7 +30,7 @@ final class Paterek {
         if (instance != null) {
             return instance;
         } else{
-            throw new NullPointerException("DBAuthenticator instance is null");
+            throw new NullPointerException("Paterek instance is null");
         }
     }
     
