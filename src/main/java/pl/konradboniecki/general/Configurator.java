@@ -1,4 +1,4 @@
-package sample.General;
+package pl.konradboniecki.general;
 
 import lombok.Cleanup;
 
@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 public final class Configurator {
     
@@ -99,12 +98,14 @@ public final class Configurator {
         }
         
         Properties defSettings = new Properties();
-        defSettings.setProperty("User", user);
-        defSettings.setProperty("Password", password);
-        defSettings.setProperty("Server-Adress-1", firstAdress);
-        defSettings.setProperty("Server-Adress-2", secondAdress);
-        /*defSettings.setProperty("Paterek-User", paterekUser);
-        defSettings.setProperty("Paterek-Password", paterekPassword);
+        defSettings.setProperty("User-Treblinka-1", user);
+        defSettings.setProperty("Password-Treblinka-1", password);
+        defSettings.setProperty("Adress-Treblinka-1", firstAdress);
+        defSettings.setProperty("User-Treblinka-2", user);
+        defSettings.setProperty("Password-Treblinka-2", password);
+        defSettings.setProperty("Adress-Treblinka-2", secondAdress);
+        /*defSettings.setProperty("User-Paterek", paterekUser);
+        defSettings.setProperty("Password-Paterek", paterekPassword);
         defSettings.setProperty("Paterek-Adress", paterekAdress);*/
         
         try {
