@@ -33,7 +33,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>sample.sample.Main.Main</mainClass>
+                                    <mainClass>sample.pl.konradboniecki.main.Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
@@ -89,6 +89,12 @@
             <groupId>local</groupId>
             <artifactId>jfreechart-1.0.19-fx</artifactId>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.0.0-M4</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
