@@ -1,9 +1,8 @@
-package sample.Main;
+package pl.konradboniecki.main;
 import lombok.Data;
 import org.omg.CORBA.IntHolder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 // Container for logic variable in Controller
