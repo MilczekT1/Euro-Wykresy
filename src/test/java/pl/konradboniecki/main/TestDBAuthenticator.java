@@ -1,4 +1,4 @@
-package sample.Main;
+package pl.konradboniecki.main;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,9 +28,9 @@ public class TestDBAuthenticator {
         }
     }
     @Test
-    public void testConnectIfNullOrClosed(){
+    public void testConnect(){
         try {
-            DBAuthenticator.getInstance().connectIfNullOrClosed();
+            DBAuthenticator.getInstance().connect();
             if (!DBAuthenticator.getInstance().isConnected()){
                 Assertions.fail("DBAuthenticator hasn't got a connection");
             }
@@ -43,17 +43,18 @@ public class TestDBAuthenticator {
     public void testCloseConnection(){
         DBAuthenticator dba = DBAuthenticator.getInstance();
         try {
-            dba.connectIfNullOrClosed();
+            dba.connect();
             try {
                 dba.closeConnection();
             } catch(SQLException e){
+                ;
+            } finally{
                 if (dba.isConnected()){
-                    Assertions.fail("DBAuthenticator should be connected");
+                    Assertions.fail("Connection has not been closed");
                 }
             }
         } catch (Exception e) {
             ;
         }
     }
-    
 }
