@@ -1,4 +1,4 @@
-package sample.General;
+package pl.konradboniecki.general;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

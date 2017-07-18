@@ -1,4 +1,4 @@
-package sample.General;
+package pl.konradboniecki.general;
 
 import com.google.common.base.Throwables;
 import javafx.scene.control.Alert;

@@ -1,4 +1,4 @@
-package sample.General;
+package pl.konradboniecki.general;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
