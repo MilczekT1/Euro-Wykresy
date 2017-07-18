@@ -1,4 +1,4 @@
-package sample.Main;
+package pl.konradboniecki.main;
 
 import com.google.common.base.Throwables;
 import com.jfoenix.controls.*;
@@ -19,10 +19,11 @@ import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.xy.XYDataset;
 
-import sample.Exceptions.GuiAccessException;
-import sample.General.MyLogger;
-import sample.General.ThreadPool;
-import sample.General.Utils;
+import pl.konradboniecki.exceptions.GuiAccessException;
+import pl.konradboniecki.general.MyLogger;
+import pl.konradboniecki.general.ThreadPool;
+import pl.konradboniecki.general.Utils;
+import pl.konradboniecki.servers.DBGroupManager;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -134,8 +135,8 @@ public final class Controller implements Initializable {
         String password = login_Password.getText();
         login_Label.setText("");
         try{
-            DBAuthenticator.getInstance().connectIfNullOrClosed();
-            if (DBAuthenticator.tryToLoginAndReturnAccessType(login, Utils.hashPassword(password), dataContainer)) {
+            DBAuthenticator.getInstance().connect();
+            if (DBAuthenticator.tryToLogin(login, Utils.hashPassword(password), dataContainer)) {
                 accessLevel = dataContainer.getAccessLevel();
                 login_Label.setTextFill(Paint.valueOf("green"));
                 login_Label.setText("Udane logowanie");
@@ -145,17 +146,19 @@ public final class Controller implements Initializable {
                     groupsTab.setDisable(true);
                 }
                 //Init gui data
-                DBGroupManager.getInstance().connectIfNullOrClosed();
+                /* TODO: odkomentuj po  zdebugowaniu logowania
+                DBGroupManager.getInstance().connect();
                 addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
                 addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
                 addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
-        
+                */
                 chartsTab.setDisable(false);
                 loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
                 login_Login.clear();
                 login_Password.clear();
         
                 DBAuthenticator.getInstance().closeConnection();
+                
             } else {
                 login_Label.setTextFill(Paint.valueOf("red"));
                 login_Label.setText("Nieudane logowanie");
@@ -178,7 +181,7 @@ public final class Controller implements Initializable {
                     Pattern.matches("^\\S{6,100}", password)) {
     
             try {
-                DBAuthenticator.getInstance().connectIfNullOrClosed();
+                DBAuthenticator.getInstance().connect();
                 if (DBAuthenticator.tryToRegister(login, Utils.hashPassword(password))) {
                     register_Label.setTextFill(Paint.valueOf("green"));
                     register_Label.setText("Udana rejestracja");
