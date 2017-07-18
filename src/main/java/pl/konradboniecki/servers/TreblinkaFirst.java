@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lombok.Cleanup;
 import pl.konradboniecki.general.Configurator;
 import pl.konradboniecki.general.MyLogger;
+import pl.konradboniecki.main.GroupGate;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,10 +12,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -87,9 +86,48 @@ final class TreblinkaFirst {
             // One of the scripts from "Create_Groups.sql" failed (because exists)
         }
     }
-    public void closeConnection()throws SQLException{
+    void closeConnection()throws SQLException{
         if (!connection.isClosed()) {
             connection.close();
+        }
+    }
+    
+    List<String> dbGetAllExistingGroupNames(){
+        List<String> list = new LinkedList<>();
+        try {
+            @Cleanup
+            Statement statement = connection.createStatement();
+            @Cleanup ResultSet rs = statement.executeQuery("select Nazwa from KONRAD_GRUPY");
+            while(rs.next()){
+                list.add(rs.getString("Nazwa"));
+            }
+            return list;
+        } catch (SQLException e) {
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            return Collections.emptyList();
+        }
+    }
+    List<GroupGate> dbGetAllGates() {
+        try {
+            String sql = "USE wizualizacja2 " + "SELECT gateId " + "      ,LongGate AS Skrocona_Nazwa " + "      ,description AS Opis " + "      ,rodzajBramki " + "      ,rodzajPomiaru " + "  FROM Slownik;";
+            @Cleanup Statement statement = connection.createStatement();
+    
+            @Cleanup ResultSet rs = statement.executeQuery(sql);
+            LinkedList<GroupGate> groupGates = new LinkedList<>();
+            while (rs.next()) {
+                String[] strings = new String[6];
+                strings[0] = rs.getString("Opis");
+                strings[1] = rs.getString("GateID");
+                strings[2] = null;
+                strings[3] = rs.getString("rodzajPomiaru");
+                strings[4] = rs.getString("rodzajBramki");
+                strings[5] = rs.getString("Skrocona_Nazwa");
+                groupGates.add(new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
+            }
+            return groupGates;
+        } catch (SQLException e){
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            return Collections.EMPTY_LIST;
         }
     }
 }
