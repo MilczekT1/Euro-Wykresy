@@ -1,10 +1,11 @@
-package sample.Main;
+package pl.konradboniecki.servers;
 
 import com.google.common.base.Throwables;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 import lombok.Cleanup;
-import sample.General.Configurator;
-import sample.General.MyLogger;
+import pl.konradboniecki.general.Configurator;
+import pl.konradboniecki.general.MyLogger;
+import pl.konradboniecki.main.GroupGate;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,12 +19,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
-final class DBGroupManager {
-    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Server-Adress");
-    private static final String USER = Configurator.getCurrentSettings().getProperty("User");
-    private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password");
+public final class DBGroupManager {
+    private static final String DB_TREBLINKA_1         = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Treblinka-Adress-1");
+    private static final String USERNAME_TREBLINKA     = Configurator.getCurrentSettings().getProperty("User-Treblinka");
+    private static final String PASSWORD_TREBLINKA     = Configurator.getCurrentSettings().getProperty("Password-Treblinka");
     private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static Connection connection;
+    private static Connection connectionWithTreblinka_1;
+    
     
     private static DBGroupManager instance = new DBGroupManager();
     public static DBGroupManager getInstance() {
@@ -33,13 +35,13 @@ final class DBGroupManager {
     
     public void connectIfNullOrClosed() {
         try {
-            if (connection != null && !connection.isClosed()) {
+            if (connectionWithTreblinka_1 != null && !connectionWithTreblinka_1.isClosed()) {
                 ;
             }
             else{
                 try {
                     Class.forName(DRIVER).newInstance();
-                    connection = DriverManager.getConnection(DB, USER, USERPW);
+                    connectionWithTreblinka_1 = DriverManager.getConnection(DB_TREBLINKA_1,USERNAME_TREBLINKA, PASSWORD_TREBLINKA);
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                     MyLogger.getLogger().log(Level.SEVERE,Throwables.getStackTraceAsString(e).trim());
                 } catch (SQLException e) {
@@ -59,7 +61,7 @@ final class DBGroupManager {
     }
     private void createTablesIfNotExists() throws SQLException {
         @Cleanup
-        Statement statement = connection.createStatement();
+        Statement statement = connectionWithTreblinka_1.createStatement();
         try {
             Path path = Paths.get("src/main/resources/", "Create_Groups.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
@@ -90,10 +92,10 @@ final class DBGroupManager {
         }
     }
     
-    static List dbGetAllExistingGroupNames(){
+    public static List dbGetAllExistingGroupNames(){
         try {
             @Cleanup
-            Statement statement = connection.createStatement();
+            Statement statement = connectionWithTreblinka_1.createStatement();
             @Cleanup
             ResultSet rs = statement.executeQuery("select Nazwa from KONRAD_GRUPY");
             LinkedList<String> list = new LinkedList<>();
@@ -106,11 +108,11 @@ final class DBGroupManager {
         }
         return Collections.EMPTY_LIST;
     }
-    static LinkedList<GroupGate> dbGetAllGatesFromGroup(String groupName){
+    public static LinkedList<GroupGate> dbGetAllGatesFromGroup(String groupName){
         try {
             String getGroupIdSQL = "USE wizualizacja2; SELECT Id_grupy FROM KONRAD_GRUPY WHERE Nazwa = ?;";
             @Cleanup
-            PreparedStatement preStatement = connection.prepareStatement(getGroupIdSQL);
+            PreparedStatement preStatement = connectionWithTreblinka_1.prepareStatement(getGroupIdSQL);
             preStatement.setString(1,groupName);
             @Cleanup
             ResultSet rs = preStatement.executeQuery();
@@ -119,7 +121,7 @@ final class DBGroupManager {
                 
                 String getDataSQL = "USE wizualizacja2; SELECT description, Slownik.gateId, rodzajPomiaru,rodzajBramki, LongGate FROM Slownik Join KONRAD_BRAMKI ON KONRAD_BRAMKI.GateId=Slownik.gateId WHERE Id_grupy=?;";
                 
-                preStatement = connection.prepareStatement(getDataSQL);
+                preStatement = connectionWithTreblinka_1.prepareStatement(getDataSQL);
                 preStatement.setString(1,wantedId);
                 rs = preStatement.executeQuery();
                 
@@ -141,7 +143,7 @@ final class DBGroupManager {
         }
         return null;
     }
-    static LinkedList<GroupGate> dbGetAllGates(){
+    public static LinkedList<GroupGate> dbGetAllGates(){
         try {
             String sql = "USE wizualizacja2 " +
                                  "SELECT gateId " +
@@ -151,7 +153,7 @@ final class DBGroupManager {
                                  "      ,rodzajPomiaru " +
                                  "  FROM Slownik;";
             @Cleanup
-            Statement statement = connection.createStatement();
+            Statement statement = connectionWithTreblinka_1.createStatement();
 
             @Cleanup
             ResultSet rs = statement.executeQuery(sql);
@@ -172,11 +174,11 @@ final class DBGroupManager {
             throw new NullPointerException("Nieudana proba poboru bazy slownika");
         }
     }
-    static String dbGetGroupIdUsingGroupName(String groupName){
+    public static String dbGetGroupIdUsingGroupName(String groupName){
         try {
             String sql = "USE wizualizacja2; SELECT Id_Grupy FROM Konrad_GRUPY WHERE Nazwa = ?;";
             @Cleanup
-            PreparedStatement preStatement = connection.prepareStatement(sql);
+            PreparedStatement preStatement = connectionWithTreblinka_1.prepareStatement(sql);
             preStatement.setString(1,groupName);
             @Cleanup
             ResultSet preRS = preStatement.executeQuery();
@@ -190,7 +192,7 @@ final class DBGroupManager {
             return null;
         }
     }
-    static GroupGate dbGetGateUsingGateId(String gateId){
+    public static GroupGate dbGetGateUsingGateId(String gateId){
         try {
             String sql = "USE wizualizacja2 "
                                  + "SELECT gateId " +
@@ -200,7 +202,7 @@ final class DBGroupManager {
                                  "      ,rodzajPomiaru " +
                                  "  FROM Slownik WHERE gateId=?;";
             @Cleanup
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connectionWithTreblinka_1.prepareStatement(sql);
             preparedStatement.setString(1,gateId);
             @Cleanup
             ResultSet rs = preparedStatement.executeQuery();
@@ -222,33 +224,33 @@ final class DBGroupManager {
         }
         return null;
     }
-    static void dbAddGroup(String groupName)throws SQLException{
+    public static void dbAddGroup(String groupName)throws SQLException{
     
         String findGroupSQL = "USE wizualizacja2;" +
                                       "SELECT Nazwa FROM KONRAD_GRUPY WHERE Nazwa = ?";
         String insertGroupSQL = "USE wizualizacja2;" +
                              "INSERT INTO KONRAD_GRUPY VALUES (?)";
         @Cleanup
-        PreparedStatement preparedStatement = connection.prepareStatement(findGroupSQL);
+        PreparedStatement preparedStatement = connectionWithTreblinka_1.prepareStatement(findGroupSQL);
         preparedStatement.setString(1,groupName);
         @Cleanup
         ResultSet rs = preparedStatement.executeQuery();
         if (rs.next()){
             throw new SQLException("Grupa już istnieje w bazie");
         } else {
-            preparedStatement = connection.prepareStatement(insertGroupSQL);
+            preparedStatement = connectionWithTreblinka_1.prepareStatement(insertGroupSQL);
             preparedStatement.setString(1,groupName);
             preparedStatement.executeUpdate();
         }
     }
-    static boolean dbDeleteGroupUsingGroupId(String groupId){
+    public static boolean dbDeleteGroupUsingGroupId(String groupId){
         //TODO: autocommit
         String sql = "USE wizualizacja2;" +
                              "DELETE FROM KONRAD_GRUPY " +
                              "WHERE Id_Grupy = ?; ";
         try {
             @Cleanup
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connectionWithTreblinka_1.prepareStatement(sql);
             preparedStatement.setString(1,groupId);
             @Cleanup
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -264,40 +266,40 @@ final class DBGroupManager {
             return false;
         }
     }
-    static void dbRemoveAllGatesFromGroup( String groupId) throws SQLException{
+    public static void dbRemoveAllGatesFromGroup( String groupId) throws SQLException{
         String delSQL = "USE wizualizacja2;" +
                                 "DELETE FROM KONRAD_BRAMKI " +
                                 "WHERE Id_Grupy = ?;";
-        boolean autoCommitStatus = connection.getAutoCommit();
-        connection.setAutoCommit(false);
+        boolean autoCommitStatus = connectionWithTreblinka_1.getAutoCommit();
+        connectionWithTreblinka_1.setAutoCommit(false);
         @Cleanup
-        PreparedStatement preparedStatement = connection.prepareStatement(delSQL);
+        PreparedStatement preparedStatement = connectionWithTreblinka_1.prepareStatement(delSQL);
         preparedStatement.setString(1, groupId);
         preparedStatement.execute();
         
-        connection.commit();
-        connection.setAutoCommit(autoCommitStatus);
+        connectionWithTreblinka_1.commit();
+        connectionWithTreblinka_1.setAutoCommit(autoCommitStatus);
     }
-    static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId) throws SQLException{
+    public static void dbInsertCurrentGatesIntoGroup(String gateId, String groupId) throws SQLException{
         String findSQL = "USE wizualizacja2;" +
                                    "SELECT * FROM Slownik WHERE gateId=?";
         String insertSQL = "USE wizualizacja2;" +
                                    "INSERT INTO KONRAD_BRAMKI VALUES (?,?)";
         
-        boolean autoCommitStatus = connection.getAutoCommit();
-        connection.setAutoCommit(false);
+        boolean autoCommitStatus = connectionWithTreblinka_1.getAutoCommit();
+        connectionWithTreblinka_1.setAutoCommit(false);
         @Cleanup
-        PreparedStatement preparedStatement = connection.prepareStatement(findSQL);
+        PreparedStatement preparedStatement = connectionWithTreblinka_1.prepareStatement(findSQL);
         preparedStatement.setString(1, gateId);
         @Cleanup
         ResultSet rs = preparedStatement.executeQuery();
         if(rs.next()){
-            preparedStatement = connection.prepareStatement(insertSQL);
+            preparedStatement = connectionWithTreblinka_1.prepareStatement(insertSQL);
             preparedStatement.setString(1, groupId);
             preparedStatement.setString(2, gateId);
             preparedStatement.executeUpdate();
         }
-        connection.commit();
-        connection.setAutoCommit(autoCommitStatus);
+        connectionWithTreblinka_1.commit();
+        connectionWithTreblinka_1.setAutoCommit(autoCommitStatus);
     }
 }
