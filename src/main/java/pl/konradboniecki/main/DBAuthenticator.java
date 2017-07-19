@@ -81,7 +81,7 @@ final class DBAuthenticator {
         try {
             statement.execute(query);
         } catch (SQLException e) {
-            // One of the scripts from "Create_Groups.sql" failed (because exists)
+            // One of the scripts from "Treblinka-groups-1.sql" failed (because exists)
         }
     }
     
