@@ -664,7 +664,7 @@ public final class Controller implements Initializable {
             digitalChart.getXYPlot().setRenderer(index, new XYStepRenderer());
         }
     }
-    public synchronized void changeProgress() {
+    public synchronized void incrementProgress() {
         double oldProgress = progressBar.getProgress();
         double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
         double newProgress = oldProgress + (1 / denominator);
@@ -673,6 +673,9 @@ public final class Controller implements Initializable {
             newProgress = 1;
             GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
         }
+        setProgress(newProgress);
+    }
+    public synchronized void changeProgress(double newProgress){
         setProgress(newProgress);
     }
     private void setProgress(double newProgress){
