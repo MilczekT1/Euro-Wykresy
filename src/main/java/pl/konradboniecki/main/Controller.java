@@ -31,10 +31,12 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public final class Controller implements Initializable {
     private static Controller instance;
@@ -52,8 +54,10 @@ public final class Controller implements Initializable {
     private ObservableList<String> listToChoose;
     private ObservableList<String> gatesOnChartList;
     private ObservableList<String> gatesNotOnChartList;
+    @FXML private Label minTimePoint;
     @FXML private JFXTimePicker startTimePicker;
     @FXML private JFXTimePicker endTimePicker;
+    @FXML private Label maxTimePoint;
     @FXML private JFXDatePicker startDatePicker;
     @FXML private JFXDatePicker endDatePicker;
     @FXML private JFXButton loadDataButton;
@@ -90,9 +94,9 @@ public final class Controller implements Initializable {
             return;
         }
         
-        ArrayList<DBDataImporter> importers = new ArrayList<>(20);//TODO: size from configuration
-        for (int i = 0; i < dataContainer.chartGroupGates.size(); i++) {
-            String gateId = dataContainer.chartGroupGates.get(i).getGateId();
+        ArrayList<DBDataImporter> importers = new ArrayList<>(20);
+        for (int i = 0; i < dataContainer.getChartGroupGates().size(); i++) {
+            String gateId = dataContainer.getChartGroupGates().get(i).getGateId();
             importers.add(new DBDataImporter(gateId, startPoint.getTime(), endPoint.getTime()));
         }
         ExecutorService executorService = ThreadPool.getInstance();
@@ -146,12 +150,13 @@ public final class Controller implements Initializable {
                     groupsTab.setDisable(true);
                 }
                 //Init gui data
-                /* TODO: odkomentuj po  zdebugowaniu logowania
                 DBGroupManager.getInstance().connect();
-                addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.dbGetAllExistingGroupNames());
+                addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.getAllAvailableGroupNames());
                 addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
-                addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.dbGetAllExistingGroupNames());
-                */
+                addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.getAllAvailableGroupNames());
+                
+                setMinAndMaxTimePoints();
+                
                 chartsTab.setDisable(false);
                 loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
                 login_Login.clear();
@@ -174,7 +179,7 @@ public final class Controller implements Initializable {
         String login = register_Login.getText();
         String password = register_Password.getText();
         String repeatedPassword = register_RepeatedPassword.getText();
-        register_Label.setText("");// todo: remove?
+        register_Label.setText("");
         register_Label.setDisable(false);
         register_Label.setTextFill(Paint.valueOf("red"));
         if (password.equals(repeatedPassword) && Pattern.matches("\\w+_\\w+", login) &&
@@ -395,7 +400,7 @@ public final class Controller implements Initializable {
                 if (groupGates != null) {
                     currentGroupGates = FXCollections.observableList(groupGates);
         
-                    distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
+                    distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.getAllGates());
                     distinctGroupGates.removeAll(currentGroupGates);
                     filteredGroupGates = new FilteredList<>(distinctGroupGates, p -> true);
         
@@ -437,10 +442,10 @@ public final class Controller implements Initializable {
         
         deleteGroupButton.setOnMouseClicked(e1 ->{
             String nameOfGroupToDelete = getSelectedItemFrom(comboGroupToDelete);
-            String groupId = DBGroupManager.dbGetGroupIdUsingGroupName(nameOfGroupToDelete);
+            String groupId = DBGroupManager.getGroupIdUsingGroupName(nameOfGroupToDelete);
             if (groupId != null){
-                if (DBGroupManager.dbDeleteGroupUsingGroupId(groupId)){
-                    List<String> allExistingGroupNames = DBGroupManager.dbGetAllExistingGroupNames();
+                if (DBGroupManager.deleteGroupUsingGroupId(groupId)){
+                    List<String> allExistingGroupNames = DBGroupManager.getAllAvailableGroupNames();
                     comboMenuEdit.getSelectionModel().clearSelection();
                     comboGroupToDelete.getSelectionModel().clearSelection();
                     comboChooseGroup.getSelectionModel().clearSelection();
@@ -457,11 +462,11 @@ public final class Controller implements Initializable {
             try {
                 dataContainer.setCurrentGroupName(getNewGroupName());
                 tableWithCurrentGates.setDisable(false);
-                List<GroupGate> groupGates = DBGroupManager.dbGetAllGatesFromGroup(dataContainer.getCurrentGroupName());
+                List<GroupGate> groupGates = DBGroupManager.getAllGatesFromGroup(dataContainer.getCurrentGroupName());
                 if (groupGates != null) {
                     currentGroupGates = FXCollections.observableList(groupGates);
     
-                    distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.dbGetAllGates());
+                    distinctGroupGates = FXCollections.observableArrayList(DBGroupManager.getAllGates());
                     distinctGroupGates.removeAll(currentGroupGates);
                     filteredGroupGates = new FilteredList<>(distinctGroupGates, p -> true);
                     
@@ -486,22 +491,20 @@ public final class Controller implements Initializable {
     
         confirmChangesButton.setOnMouseClicked((event) ->{
             try {
-                //TODO: batch
-                dataContainer.setGroupId(DBGroupManager.dbGetGroupIdUsingGroupName(getNewGroupName()));
-                DBGroupManager.dbRemoveAllGatesFromGroup(dataContainer.getGroupId());
-                for (GroupGate groupGate : tableWithCurrentGates.getItems()) {
-                    // groupGate does not always contain groupId -> use dataContainer
-                    DBGroupManager.dbInsertCurrentGatesIntoGroup(groupGate.getGateId(), dataContainer.getGroupId());
-                }
-                ////dataContainer.getGateIdsToDeleteFromGroup().clear();
-            } catch (GuiAccessException | SQLException e) {
+                dataContainer.setGroupId(DBGroupManager.getGroupIdUsingGroupName(getNewGroupName()));
+                LinkedList<String> groupIds = new LinkedList<>();
+                groupIds.addAll(tableWithCurrentGates.getItems().stream()
+                                        .map((gg)->gg.getGateId())
+                                        .collect(Collectors.toList()));
+                DBGroupManager.editGroup(groupIds,dataContainer.getGroupId());
+            } catch (GuiAccessException e) {
                 MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             }
         });
         addGroupButton.setOnMouseClicked((e2) ->{
             try {
                 String groupName = getNewGroupName();
-                DBGroupManager.dbAddGroup(groupName);
+                DBGroupManager.addGroup(groupName);
         
                 // fix GUI after not user-driven changes
                 comboMenuEdit.getSelectionModel().clearSelection();
@@ -509,7 +512,7 @@ public final class Controller implements Initializable {
                 listToEdit.clear();
                 listToChoose.clear();
                 
-                List<String> allExistingGroupNames = DBGroupManager.dbGetAllExistingGroupNames();
+                List<String> allExistingGroupNames = DBGroupManager.getAllAvailableGroupNames();
                 addComboBoxOptionsFromList(comboMenuEdit, listToEdit, allExistingGroupNames);
                 addComboBoxOptionsFromList(comboGroupToDelete, listToEdit);
                 addComboBoxOptionsFromList(comboChooseGroup, listToChoose, allExistingGroupNames);
@@ -527,7 +530,7 @@ public final class Controller implements Initializable {
             gatesNotOnChartList.clear();
             gatesOnChartList.clear();
             
-            dataContainer.setChartGroupGates(DBGroupManager.dbGetAllGatesFromGroup(
+            dataContainer.setChartGroupGates(DBGroupManager.getAllGatesFromGroup(
                     getSelectedItemFrom(comboChooseGroup)));
             GuiDataContainer.getAllChartData().clear();
             
@@ -672,5 +675,16 @@ public final class Controller implements Initializable {
         progressBar.setProgress(newProgress);
         progressIndicator.setProgress(newProgress);
     }
-    
+    private void setMinAndMaxTimePoints(){
+        try {
+            MinMax minMax = DBGroupManager.getMinAndMax();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss  dd.MM.yyyy");
+            LocalDateTime minPoint = new Timestamp(minMax.getMin()).toLocalDateTime();
+            LocalDateTime maxPoint = new Timestamp(minMax.getMax()).toLocalDateTime();
+            minTimePoint.setText("Od: " + formatter.format(minPoint));
+            maxTimePoint.setText("Do: " + formatter.format(maxPoint));
+        } catch(Exception e){
+            ;
+        }
+    }
 }
