@@ -5,7 +5,7 @@ import org.omg.CORBA.IntHolder;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-// Container for logic variable in Controller
+// Container for logic variables in Controller
 @Data
 final class GuiDataContainer {
     private static GuiDataContainer instance = new GuiDataContainer();
@@ -35,8 +35,7 @@ final class GuiDataContainer {
                 return gate.getGateId();
             }
         }
-        //exception?
-        return null;
+        return "incorrect input - description";
     }
     String getGateTypeUsingDescription(String description){
         for (GroupGate gate: chartGroupGates){
@@ -44,8 +43,7 @@ final class GuiDataContainer {
                 return gate.getGateType();
             }
         }
-        //exception?
-        return null;
+        return "incorrect input - description";
     }
     
     static ArrayList<GateData> getAllChartData() {
