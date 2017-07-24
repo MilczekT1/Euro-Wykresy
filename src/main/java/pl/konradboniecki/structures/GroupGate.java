@@ -1,4 +1,4 @@
-package pl.konradboniecki.main;
+package pl.konradboniecki.structures;
 
 import javafx.beans.property.SimpleStringProperty;
 
