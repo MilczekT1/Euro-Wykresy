@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lombok.Cleanup;
 import pl.konradboniecki.general.Configurator;
 import pl.konradboniecki.general.MyLogger;
+import pl.konradboniecki.servers.SQLServerConnector;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,15 +17,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
-final class DBAuthenticator {
-    private static final String DB = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Adress-Treblinka-1");
-    private static final String USER = Configurator.getCurrentSettings().getProperty("User-Treblinka-1");
-    private static final String USERPW = Configurator.getCurrentSettings().getProperty("Password-Treblinka-1");
-    private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static Connection connection;
+final class DBAuthenticator extends SQLServerConnector{
     private static DBAuthenticator instance = new DBAuthenticator();
     
-    private DBAuthenticator(){}
+    private DBAuthenticator(){
+        this.SERVER_ADRESS = "jdbc:sqlserver://" + Configurator.getCurrentProperty("Adress-Treblinka-1");
+        this.USERNAME = Configurator.getCurrentProperty("User-Treblinka-1");
+        this.PASSWORD = Configurator.getCurrentProperty("Password-Treblinka-1");
+    }
     
     public static DBAuthenticator getInstance() throws NullPointerException {
         if (instance != null) {
@@ -43,7 +43,7 @@ final class DBAuthenticator {
     void connect() throws Exception {
         if (!isConnected()){
             Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(DB, USER, USERPW);
+            connection = DriverManager.getConnection(SERVER_ADRESS, USERNAME, PASSWORD);
     
             try {
                 setUpStructuresIfNotExists();

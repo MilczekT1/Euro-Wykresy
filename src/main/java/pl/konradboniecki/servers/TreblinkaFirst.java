@@ -21,12 +21,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-final class TreblinkaFirst {
-    private static final String DB_TREBLINKA_1       = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Adress-Treblinka-1");
-    private static final String USERNAME_TREBLINKA_1 = Configurator.getCurrentSettings().getProperty("User-Treblinka-1");
-    private static final String PASSWORD_TREBLINKA_1 = Configurator.getCurrentSettings().getProperty("Password-Treblinka-1");
-    private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static Connection connection;
+final class TreblinkaFirst extends SQLServerConnector {
     private ArrayList<String> instances;
     private static TreblinkaFirst instance = new TreblinkaFirst();
     static TreblinkaFirst getInstance() throws NullPointerException{
@@ -37,7 +32,11 @@ final class TreblinkaFirst {
         }
     }
     
-    private TreblinkaFirst(){}
+    private TreblinkaFirst(){
+        this.SERVER_ADRESS = "jdbc:sqlserver://" + Configurator.getCurrentProperty("Adress-Treblinka-1");
+        this.USERNAME = Configurator.getCurrentProperty("User-Treblinka-1");
+        this.PASSWORD = Configurator.getCurrentProperty("Password-Treblinka-1");
+    }
     
     boolean isConnected(){
         try {
@@ -50,13 +49,13 @@ final class TreblinkaFirst {
     void connect() throws Exception {
         if (!isConnected()){
             Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(DB_TREBLINKA_1, USERNAME_TREBLINKA_1, PASSWORD_TREBLINKA_1);
+            connection = DriverManager.getConnection(SERVER_ADRESS, USERNAME, PASSWORD);
             
-            /*try {
+            try {
                 setUpStructuresIfNotExists();
             } catch (SQLException e) {
                 MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-            }*/
+            }
         }
     }
     private void setUpStructuresIfNotExists() throws SQLException{
@@ -153,12 +152,12 @@ final class TreblinkaFirst {
                 String wantedId = rs.getString("Id_grupy");
             
                 String getDataSQL = " SELECT description, " +
-                                            " Slownik.gateId, " +
+                                            " wizualizacja.dbo.Slownik.gateId, " +
                                             " rodzajPomiaru," +
                                             " rodzajBramki, " +
                                             " LongGate " +
-                                            " FROM Slownik" +
-                                            " Join wizualizacja.dbo.EW_Bramki ON wizualizacja.dbo.EW_Bramki.GateId=Slownik.gateId WHERE Id_grupy=?;";
+                                            " FROM wizualizacja.dbo.Slownik" +
+                                            " Join wizualizacja.dbo.EW_Bramki ON wizualizacja.dbo.EW_Bramki.GateId=wizualizacja.dbo.Slownik.gateId WHERE Id_grupy=?;";
             
                 preStatement = connection.prepareStatement(getDataSQL);
                 preStatement.setString(1,wantedId);
