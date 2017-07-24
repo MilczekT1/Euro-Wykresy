@@ -2,6 +2,7 @@ package pl.konradboniecki.main;
 
 import com.google.common.base.Throwables;
 import lombok.Cleanup;
+import pl.konradboniecki.structures.GateData;
 import pl.konradboniecki.general.MyLogger;
 import pl.konradboniecki.general.ThreadPool;
 
