@@ -11,19 +11,15 @@ public class GateData {
     private long[] timestamps;
     private double[] values;
     
-    public GateData(String gateId, CachedRowSet crs) {
+    public GateData(String gateId, CachedRowSet crs) throws SQLException {
         this.gateId = gateId;
         timestamps = new long[crs.size()];
         values = new double[crs.size()];
         int counter = 0;
-        try {
-            while (crs.next()){
-                timestamps[counter] = crs.getLong("time");
-                values[counter] = crs.getDouble("value");
-                counter++;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace(); //TODO: log it
+        while (crs.next()){
+            timestamps[counter] = crs.getLong("time");
+            values[counter] = crs.getDouble("value");
+            counter++;
         }
     }
 }
