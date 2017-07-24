@@ -33,7 +33,7 @@ final class DBAuthenticator {
             throw new NullPointerException("DBAuthenticator instance is null");
         }
     }
-    public boolean isConnected(){
+    boolean isConnected(){
         try {
             return (connection != null && !connection.isClosed() && connection.isValid(3000)) ? true : false;
         } catch (SQLException e) {
@@ -85,7 +85,7 @@ final class DBAuthenticator {
         }
     }
     
-    public void closeConnection() throws SQLException{
+    void closeConnection() throws SQLException{
         if (!connection.isClosed()) {
             connection.close();
         }
