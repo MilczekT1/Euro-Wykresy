@@ -34,9 +34,10 @@ final class DBDataImporter extends Thread {
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             ThreadPool.getInstance().shutdownNow();
+            Controller.getInstance().changeProgress(0);
         }
         
         //Controller instance, because progressbar cant be static
-        Controller.getInstance().changeProgress();
+        Controller.getInstance().incrementProgress();
     }
 }
