@@ -151,4 +151,8 @@ public final class Configurator {
     public static Properties getCurrentSettings(){
         return currentSettings;
     }
+    
+    public static String getCurrentProperty(String key){
+        return Configurator.getCurrentSettings().getProperty(key);
+    }
 }
