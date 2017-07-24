@@ -19,11 +19,14 @@ import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.xy.XYDataset;
 
+import pl.konradboniecki.structures.GateData;
+import pl.konradboniecki.structures.GroupGate;
 import pl.konradboniecki.exceptions.GuiAccessException;
 import pl.konradboniecki.general.MyLogger;
 import pl.konradboniecki.general.ThreadPool;
 import pl.konradboniecki.general.Utils;
 import pl.konradboniecki.servers.DBGroupManager;
+import pl.konradboniecki.structures.MinMax;
 
 import java.net.URL;
 import java.sql.SQLException;
