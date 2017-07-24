@@ -152,20 +152,21 @@ public final class Controller implements Initializable {
                 } else {
                     groupsTab.setDisable(true);
                 }
+                DBAuthenticator.getInstance().closeConnection();
+                
                 //Init gui data
                 DBGroupManager.getInstance().connect();
                 addComboBoxOptionsFromList(comboMenuEdit, listToEdit, DBGroupManager.getAllAvailableGroupNames());
                 addComboBoxOptionsFromList(comboGroupToDelete,listToEdit);
                 addComboBoxOptionsFromList(comboChooseGroup, listToChoose, DBGroupManager.getAllAvailableGroupNames());
-                
+    
                 setMinAndMaxTimePoints();
-                
+    
                 chartsTab.setDisable(false);
                 loggedUser_Label.setText("Zalogowany: " + login_Login.getText());
                 login_Login.clear();
                 login_Password.clear();
         
-                DBAuthenticator.getInstance().closeConnection();
                 
             } else {
                 login_Label.setTextFill(Paint.valueOf("red"));
@@ -239,7 +240,7 @@ public final class Controller implements Initializable {
         else {
             String result = newGroupTextField.getText();
             if (result != null && !result.equals(""))
-                return newGroupTextField.getText();
+                return result;
             else
                 throw new GuiAccessException("ERROR: pole jest puste");
         }
@@ -355,8 +356,8 @@ public final class Controller implements Initializable {
         tableWithCurrentGates.setDisable(true);
     }
     private void initCharts(){
-        createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
-        createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
+        createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy");
+        createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy");
         
         topChartViewer.prefHeightProperty().bind(topChartPane.heightProperty());
         topChartPane.getChildren().add(topChartViewer);
@@ -488,7 +489,7 @@ public final class Controller implements Initializable {
             try {
                 dataContainer.setCurrentGroupName(getNewGroupName());
             } catch (GuiAccessException e1) {
-                MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e1).trim());
+                ;
             }
         });
     
@@ -550,8 +551,8 @@ public final class Controller implements Initializable {
             setProgress(0);
             
             //Clear charts
-            createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
-            createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
+            createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy");
+            createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy");
         });
         
         // Add gateData to chart
@@ -584,9 +585,9 @@ public final class Controller implements Initializable {
                 String gateTypeOfGateToRemove = dataContainer.getGateTypeUsingDescription(selectedGateToRemove);
                 
                 if (gateTypeOfGateToRemove.equals("A")){
-                    createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy", "Wartosc");
+                    createDefaultAnalogChartInAnalogChartViewer("Wykres Analogowy");
                 } else if (gateTypeOfGateToRemove.equals("D")){
-                    createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy", "Wartosc");
+                    createDefaultDigitalChartInDigitalChartViewer("Wykres Cyfrowy");
                 }
                 
                 String selectedGateToAdd;
@@ -621,18 +622,18 @@ public final class Controller implements Initializable {
         });
     }
     
-    private void createDefaultAnalogChartInAnalogChartViewer(String title, String measureType){
+    private void createDefaultAnalogChartInAnalogChartViewer(String title){
         xyAnalogDataset = null;
-        analogChart = Chart.createChart(xyAnalogDataset, title, measureType);
+        analogChart = Chart.createChart(xyAnalogDataset, title, "Wartość");
         analogChart.getXYPlot().getDomainAxis().setAutoRange(true);
         if (topChartViewer != null)
             topChartViewer.setChart(analogChart);
         else
             topChartViewer = new ChartViewer(analogChart);
     }
-    private void createDefaultDigitalChartInDigitalChartViewer(String title, String measureType){
+    private void createDefaultDigitalChartInDigitalChartViewer(String title){
         xyDigitalDataset = null;
-        digitalChart = Chart.createChart(xyDigitalDataset, title, measureType);
+        digitalChart = Chart.createChart(xyDigitalDataset, title, "Wartość");
         digitalChart.getXYPlot().getDomainAxis().setAutoRange(true);
         if (bottomChartViewer != null)
             bottomChartViewer.setChart(digitalChart);
