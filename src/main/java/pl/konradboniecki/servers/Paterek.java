@@ -58,7 +58,7 @@ final class Paterek {
     private void setUpStructuresIfNotExists() throws SQLException{
         @Cleanup Statement statement = connection.createStatement();
         try {
-            Path path = Paths.get("src/main/resources/", "Create_Groups.sql");
+            Path path = Paths.get("src/main/resources/", "Treblinka-groups-1.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
             List<String> queries = new LinkedList<>();
             
@@ -74,16 +74,16 @@ final class Paterek {
                 executeCreateIfNotExists(fromFileQuery, statement);
             
         } catch (FileNotFoundException e) {
-            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Create_Groups.sql");
+            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Treblinka-groups-1.sql");
         } catch(IOException e) {
-            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU Create_Groups.sql");
+            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU Treblinka-groups-1.sql");
         }
     }
     private void executeCreateIfNotExists(String query, Statement statement){
         try {
             statement.execute(query);
         } catch (SQLException e) {
-            // One of the scripts from "Create_Groups.sql" failed (because exists)
+            // One of the scripts from "Treblinka-groups-1.sql" failed (because exists)
         }
     }
     public void closeConnection()throws SQLException{
@@ -126,6 +126,49 @@ final class Paterek {
             }
             return groupGates;
         } catch (SQLException e){
+            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+            return Collections.EMPTY_LIST;
+        }
+    }
+    List<GroupGate> dbGetAllGatesFromGroup(String groupName){
+        try {
+            String getGroupIdSQL = "USE wizualizacja; SELECT Id_grupy FROM EW_Grupy WHERE Nazwa = ?;";
+            @Cleanup
+            PreparedStatement preStatement = connection.prepareStatement(getGroupIdSQL);
+            preStatement.setString(1,groupName);
+            @Cleanup
+            ResultSet rs = preStatement.executeQuery();
+            if(rs.next()) {
+                String wantedId = rs.getString("Id_grupy");
+                
+                String getDataSQL = "USE wizualizacja; " +
+                                            " SELECT description, " +
+                                            " Slownik.gateId, " +
+                                            " rodzajPomiaru," +
+                                            " rodzajBramki, " +
+                                            " LongGate " +
+                                            " FROM Slownik" +
+                                            " Join EW_Bramki ON EW_Bramki.GateId=Slownik.gateId WHERE Id_grupy=?;";
+                
+                preStatement = connection.prepareStatement(getDataSQL);
+                preStatement.setString(1,wantedId);
+                rs = preStatement.executeQuery();
+                
+                LinkedList<GroupGate> groupGates = new LinkedList<>();
+                while (rs.next()) {
+                    String[] strings = new String[6];
+                    strings[0] = rs.getString("description");
+                    strings[1] = rs.getString("gateId");
+                    strings[2] = wantedId;
+                    strings[3] = rs.getString("rodzajPomiaru");
+                    strings[4] = rs.getString("rodzajBramki");
+                    strings[5] = rs.getString("LongGate");
+                    groupGates.add(new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
+                }
+                return groupGates;
+            }
+            return Collections.EMPTY_LIST;
+        } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             return Collections.EMPTY_LIST;
         }
