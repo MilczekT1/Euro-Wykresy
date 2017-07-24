@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lombok.Cleanup;
 import pl.konradboniecki.general.Configurator;
 import pl.konradboniecki.general.MyLogger;
-import pl.konradboniecki.main.GroupGate;
+import pl.konradboniecki.structures.GroupGate;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
