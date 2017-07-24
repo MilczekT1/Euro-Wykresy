@@ -1,4 +1,4 @@
-package pl.konradboniecki.main;
+package pl.konradboniecki.structures;
 
 import lombok.Getter;
 
@@ -6,7 +6,7 @@ import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
 
 @Getter
-class GateData {
+public class GateData {
     private String gateId;
     private long[] timestamps;
     private double[] values;
