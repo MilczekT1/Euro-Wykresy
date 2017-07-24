@@ -1,6 +1,8 @@
 package pl.konradboniecki.main;
 import lombok.Data;
 import org.omg.CORBA.IntHolder;
+import pl.konradboniecki.structures.GateData;
+import pl.konradboniecki.structures.GroupGate;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
