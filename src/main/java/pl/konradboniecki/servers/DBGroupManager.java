@@ -1,9 +1,10 @@
 package pl.konradboniecki.servers;
 
+import pl.konradboniecki.structures.ChartPoint;
 import pl.konradboniecki.structures.GroupGate;
 import pl.konradboniecki.structures.MinMax;
 
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.LinkedList;
 
 public final class DBGroupManager {
@@ -48,6 +49,9 @@ public final class DBGroupManager {
     }
     public static MinMax getMinAndMax() throws SQLException{
         return sourceManager.getMinAndMaxAvailableTimePoints();
+    }
+    public static LinkedList<ChartPoint> importGateValues(String gateId, long start, long end) throws SQLException {
+        return sourceManager.importGateValues(gateId, start, end);
     }
     /*
     public static GroupGate dbGetGateUsingGateId(String gateId){

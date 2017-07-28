@@ -5,6 +5,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 import lombok.Cleanup;
 import pl.konradboniecki.general.Configurator;
 import pl.konradboniecki.general.MyLogger;
+import pl.konradboniecki.structures.ChartPoint;
 import pl.konradboniecki.structures.GroupGate;
 import pl.konradboniecki.structures.MinMax;
 
@@ -22,8 +23,9 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 final class TreblinkaFirst extends SQLServerConnector {
-    private ArrayList<String> instances;
     private static TreblinkaFirst instance = new TreblinkaFirst();
+    private ArrayList<String> instances;
+    
     static TreblinkaFirst getInstance() throws NullPointerException{
         if (instance != null) {
             return instance;
@@ -319,5 +321,25 @@ final class TreblinkaFirst extends SQLServerConnector {
             if (Pattern.matches("e([1-9]|[1-9]{1}[0-9]+)_VfiTag",db))
                 instances.add(db);
         }
+    }
+    
+    public LinkedList<ChartPoint> dbImportGateValues(String gateId, long start, long end) throws SQLException {
+        
+        ArrayList<String> selectFromInstanceQuerries = new ArrayList<>(10);
+        for (int i=0 ; i < instances.size(); i++){
+            selectFromInstanceQuerries.add("SELECT time, value FROM " + instances.get(i) + ".dbo.VfiTagNumHistory WHERE gateId = " + gateId + " AND time BETWEEN " + start + " AND " + end + ";");
+        }
+        LinkedList<ChartPoint> points = new LinkedList<>();
+        @Cleanup
+        Statement statement = connection.createStatement();
+        
+        for (String query : selectFromInstanceQuerries){
+            @Cleanup
+            ResultSet resultSet = statement.executeQuery(query);
+            while (resultSet.next()){
+                points.add(new ChartPoint(resultSet.getLong("time"),resultSet.getDouble("value")));
+            }
+        }
+        return points;
     }
 }

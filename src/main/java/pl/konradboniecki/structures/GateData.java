@@ -2,8 +2,8 @@ package pl.konradboniecki.structures;
 
 import lombok.Getter;
 
-import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 
 @Getter
 public class GateData {
@@ -11,14 +11,14 @@ public class GateData {
     private long[] timestamps;
     private double[] values;
     
-    public GateData(String gateId, CachedRowSet crs) throws SQLException {
+    public GateData(String gateId, LinkedList<ChartPoint> chartPoints) throws SQLException {
         this.gateId = gateId;
-        timestamps = new long[crs.size()];
-        values = new double[crs.size()];
+        timestamps = new long[chartPoints.size()];
+        values = new double[chartPoints.size()];
         int counter = 0;
-        while (crs.next()){
-            timestamps[counter] = crs.getLong("time");
-            values[counter] = crs.getDouble("value");
+        for (ChartPoint point : chartPoints){
+            timestamps[counter] = point.getTimestamp();
+            values[counter] = point.getValue();
             counter++;
         }
     }

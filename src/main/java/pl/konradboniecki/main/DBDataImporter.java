@@ -1,13 +1,15 @@
 package pl.konradboniecki.main;
 
 import com.google.common.base.Throwables;
-import lombok.Cleanup;
-import pl.konradboniecki.structures.GateData;
 import pl.konradboniecki.general.MyLogger;
 import pl.konradboniecki.general.ThreadPool;
+import pl.konradboniecki.general.Utils;
+import pl.konradboniecki.servers.DBGroupManager;
+import pl.konradboniecki.structures.ChartPoint;
+import pl.konradboniecki.structures.GateData;
 
-import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.logging.Level;
 
 final class DBDataImporter extends Thread {
@@ -26,15 +28,16 @@ final class DBDataImporter extends Thread {
     @Override
     public void run() {
         try {
-            @Cleanup
-            CachedRowSet rows = Chart.dbImportGateValues(gateId,start,end);
+            LinkedList<ChartPoint> chartPoints = DBGroupManager.importGateValues(gateId,start,end);
             synchronized (GuiDataContainer.getAllChartData()){
-                GuiDataContainer.getAllChartData().add(new GateData(gateId,rows));
+                GuiDataContainer.getAllChartData().add(new GateData(gateId,chartPoints));
             }
         } catch (SQLException e) {
             MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-            ThreadPool.getInstance().shutdownNow();
             Controller.getInstance().changeProgress(0);
+            Utils.showMessageDialog("Blad importu danych do wykresu!");
+            ThreadPool.getInstance().shutdownNow();
+            return;
         }
         
         //Controller instance, because progressbar cant be static
