@@ -55,4 +55,7 @@ final class GuiDataContainer {
     public IntHolder getAmountOfProcessedThreads() {
         return amountOfProcessedThreads;
     }
+    public void setAmountOfProcessedThreads(int newOne) {
+        amountOfProcessedThreads = new IntHolder(newOne);
+    }
 }
