@@ -1,0 +1,13 @@
+        //unlock comboBoxes after 100% import
+        executorService.execute(()-> {
+            while(progressBar.getProgress() != 1){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
+                }
+            }
+            comboChooseGroup.setDisable(false);
+            comboNotOnChartGates.setDisable(false);
+            comboOnChartGates.setDisable(false);
+        });
