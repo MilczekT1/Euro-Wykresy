@@ -2,6 +2,7 @@ package pl.konradboniecki.main;
 
 import com.google.common.base.Throwables;
 import com.jfoenix.controls.*;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,14 +19,13 @@ import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.xy.XYDataset;
-
-import pl.konradboniecki.structures.GateData;
-import pl.konradboniecki.structures.GroupGate;
 import pl.konradboniecki.exceptions.GuiAccessException;
 import pl.konradboniecki.general.MyLogger;
 import pl.konradboniecki.general.ThreadPool;
 import pl.konradboniecki.general.Utils;
 import pl.konradboniecki.servers.DBGroupManager;
+import pl.konradboniecki.structures.GateData;
+import pl.konradboniecki.structures.GroupGate;
 import pl.konradboniecki.structures.MinMax;
 
 import java.net.URL;
@@ -79,10 +79,10 @@ public final class Controller implements Initializable {
     
     public void importChartData() {
         Runtime.getRuntime().gc();
-        LocalDate startDate = LocalDate.of(2017,2,1); //startDatePicker.getValue();
-        LocalTime startTime = LocalTime.of(12,0); //startTimePicker.getValue();
-        LocalDate endDate = LocalDate.of(2017,3,1); //endDatePicker.getValue();
-        LocalTime endTime = LocalTime.of(12,0); //endTimePicker.getValue();
+        LocalDate startDate = /*LocalDate.of(2017,2,1);*/ startDatePicker.getValue();
+        LocalTime startTime = /*LocalTime.of(12,0);*/ startTimePicker.getValue();
+        LocalDate endDate = /*LocalDate.of(2017,3,1);*/ endDatePicker.getValue();
+        LocalTime endTime = /*LocalTime.of(12,0);*/ endTimePicker.getValue();
         
         Timestamp startPoint = Timestamp.valueOf(LocalDateTime.of(startDate, startTime));
         Timestamp endPoint = Timestamp.valueOf(LocalDateTime.of(endDate, endTime));
@@ -106,19 +106,7 @@ public final class Controller implements Initializable {
         for (DBDataImporter importer : importers) {
             executorService.execute(importer);
         }
-        //unlock comboBoxes after 100% import
-        executorService.execute(()-> {
-            while(progressBar.getProgress() != 1){
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e).trim());
-                }
-            }
-            comboChooseGroup.setDisable(false);
-            comboNotOnChartGates.setDisable(false);
-            comboOnChartGates.setDisable(false);
-        });
+        progressBar.setProgress(-1);
         
         comboChooseGroup.setDisable(true);
         loadDataButton.setDisable(true);
@@ -665,13 +653,14 @@ public final class Controller implements Initializable {
         }
     }
     public synchronized void incrementProgress() {
-        double oldProgress = progressBar.getProgress();
+        double oldProgress = progressIndicator.getProgress();
         double denominator = (double) GuiDataContainer.getInstance().getChartGroupGates().size();
         double newProgress = oldProgress + (1 / denominator);
         dataContainer.getAmountOfProcessedThreads().value +=1;
         if (GuiDataContainer.getInstance().getAmountOfProcessedThreads().value == denominator){
             newProgress = 1;
-            GuiDataContainer.getInstance().getAmountOfProcessedThreads().value = 0;
+            GuiDataContainer.getInstance().setAmountOfProcessedThreads(0);
+            unlockCombosAfterImport();
         }
         setProgress(newProgress);
     }
@@ -679,8 +668,13 @@ public final class Controller implements Initializable {
         setProgress(newProgress);
     }
     private void setProgress(double newProgress){
-        progressBar.setProgress(newProgress);
-        progressIndicator.setProgress(newProgress);
+        if (newProgress == 0 || newProgress == 1){
+            Platform.runLater(() -> progressBar.setProgress(0));
+        }
+        else
+            Platform.runLater(() -> progressBar.setProgress(-1));
+    
+        Platform.runLater(() -> progressIndicator.setProgress(newProgress));
     }
     private void setMinAndMaxTimePoints(){
         try {
@@ -693,5 +687,11 @@ public final class Controller implements Initializable {
         } catch(Exception e){
             ;
         }
+    }
+    private void unlockCombosAfterImport(){
+        comboChooseGroup.setDisable(false);
+        comboNotOnChartGates.setDisable(false);
+        comboOnChartGates.setDisable(false);
+        Runtime.getRuntime().gc();
     }
 }
