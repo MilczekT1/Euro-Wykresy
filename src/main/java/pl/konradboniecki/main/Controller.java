@@ -19,7 +19,7 @@ import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.xy.XYDataset;
-import pl.konradboniecki.exceptions.GuiAccessException;
+import pl.konradboniecki.exceptions.GuiNodeAccessException;
 import pl.konradboniecki.general.MyLogger;
 import pl.konradboniecki.general.ThreadPool;
 import pl.konradboniecki.general.Utils;
@@ -217,19 +217,19 @@ public final class Controller implements Initializable {
     
     private GuiDataContainer dataContainer;
     
-    private String getNewGroupName() throws GuiAccessException {
+    private String getNewGroupName() throws GuiNodeAccessException {
         if (newGroupTextField.isDisabled())
             if (comboMenuEdit.getSelectionModel().getSelectedItem() != null) {
                 return getSelectedItemFrom(comboMenuEdit);
             } else {
-                throw new GuiAccessException("ERROR: nie wybrano grupy do edycji");
+                throw new GuiNodeAccessException("ERROR: nie wybrano grupy do edycji");
             }
         else {
             String result = newGroupTextField.getText();
             if (result != null && !result.equals(""))
                 return result;
             else
-                throw new GuiAccessException("ERROR: pole jest puste");
+                throw new GuiNodeAccessException("ERROR: pole jest puste");
         }
     }
     
@@ -468,14 +468,14 @@ public final class Controller implements Initializable {
                 } else {
                     tableWithCurrentGates.getItems().clear();
                 }
-            } catch (GuiAccessException e1) {
+            } catch (GuiNodeAccessException e1) {
                 MyLogger.getLogger().log(Level.WARNING,Throwables.getStackTraceAsString(e1).trim());
             }
         });
         newGroupTextField.setOnKeyReleased((e) -> {
             try {
                 dataContainer.setCurrentGroupName(getNewGroupName());
-            } catch (GuiAccessException e1) {
+            } catch (GuiNodeAccessException e1) {
                 ;
             }
         });
@@ -488,7 +488,7 @@ public final class Controller implements Initializable {
                                         .map((gg)->gg.getGateId())
                                         .collect(Collectors.toList()));
                 DBGroupManager.editGroup(groupIds,dataContainer.getGroupId());
-            } catch (GuiAccessException e) {
+            } catch (GuiNodeAccessException e) {
                 MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             }
         });
@@ -512,7 +512,7 @@ public final class Controller implements Initializable {
                 editGroupChecker.setSelected(true);
                 handleMouseClicked_OnEditChecker();
         
-            } catch (GuiAccessException | SQLException e) {
+            } catch (GuiNodeAccessException | SQLException e) {
                 MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
             }
         });
