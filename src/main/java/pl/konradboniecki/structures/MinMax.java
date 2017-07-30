@@ -1,8 +1,8 @@
 package pl.konradboniecki.structures;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class MinMax {
     private long min;
     private long max;
@@ -10,14 +10,5 @@ public class MinMax {
     public MinMax(long min, long max) {
         this.min = min;
         this.max = max;
-    }
-    
-    public void setMin(long min) {
-        if (this.min > min)
-            this.min = min;
-    }
-    public void setMax(long max) {
-        if (this.max < max)
-            this.max = max;
     }
 }
