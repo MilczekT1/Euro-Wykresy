@@ -33,26 +33,7 @@ final class DBAuthenticator extends SQLServerConnector{
             throw new NullPointerException("DBAuthenticator instance is null");
         }
     }
-    boolean isConnected(){
-        try {
-            return (connection != null && !connection.isClosed() && connection.isValid(3000)) ? true : false;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
-    void connect() throws Exception {
-        if (!isConnected()){
-            Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(SERVER_ADRESS, USERNAME, PASSWORD);
-    
-            try {
-                setUpStructuresIfNotExists();
-            } catch (SQLException e) {
-                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-            }
-        }
-    }
-    private void setUpStructuresIfNotExists() throws SQLException {
+    protected void setUpStructuresIfNotExists() throws SQLException {
         @Cleanup
         Statement statement = connection.createStatement();
         try {
@@ -82,12 +63,6 @@ final class DBAuthenticator extends SQLServerConnector{
             statement.execute(query);
         } catch (SQLException e) {
             // One of the scripts from "Treblinka-groups-1.sql" failed (because exists)
-        }
-    }
-    
-    void closeConnection() throws SQLException{
-        if (!connection.isClosed()) {
-            connection.close();
         }
     }
     

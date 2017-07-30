@@ -26,6 +26,12 @@ final class TreblinkaFirst extends SQLServerConnector {
     private static TreblinkaFirst instance = new TreblinkaFirst();
     private ArrayList<String> instances;
     
+    private TreblinkaFirst(){
+        this.SERVER_ADRESS = "jdbc:sqlserver://" + Configurator.getCurrentProperty("Adress-Treblinka-1");
+        this.USERNAME = Configurator.getCurrentProperty("User-Treblinka-1");
+        this.PASSWORD = Configurator.getCurrentProperty("Password-Treblinka-1");
+    }
+    
     static TreblinkaFirst getInstance() throws NullPointerException{
         if (instance != null) {
             return instance;
@@ -33,34 +39,7 @@ final class TreblinkaFirst extends SQLServerConnector {
             throw new NullPointerException("TreblinkaFirst instance is null");
         }
     }
-    
-    private TreblinkaFirst(){
-        this.SERVER_ADRESS = "jdbc:sqlserver://" + Configurator.getCurrentProperty("Adress-Treblinka-1");
-        this.USERNAME = Configurator.getCurrentProperty("User-Treblinka-1");
-        this.PASSWORD = Configurator.getCurrentProperty("Password-Treblinka-1");
-    }
-    
-    boolean isConnected(){
-        try {
-            return (connection != null && !connection.isClosed() && connection.isValid(3000)) ? true : false;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
-    
-    void connect() throws Exception {
-        if (!isConnected()){
-            Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(SERVER_ADRESS, USERNAME, PASSWORD);
-            
-            try {
-                setUpStructuresIfNotExists();
-            } catch (SQLException e) {
-                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-            }
-        }
-    }
-    private void setUpStructuresIfNotExists() throws SQLException{
+    protected void setUpStructuresIfNotExists() throws SQLException{
         @Cleanup Statement statement = connection.createStatement();
         try {
             Path path = Paths.get("src/main/resources/", "Treblinka-groups-1.sql");
@@ -88,14 +67,12 @@ final class TreblinkaFirst extends SQLServerConnector {
         try {
             statement.execute(query);
         } catch (SQLException e) {
-            // One of the scripts from "Treblinka-groups-1.sql" failed (because exists)
+            // One of the scripts  failed (because exists)
         }
     }
-    void closeConnection()throws SQLException{
-        if (!connection.isClosed()) {
-            connection.close();
-        }
-    }
+    
+    
+    
     
     LinkedList<String> dbGetAllExistingGroupNames(){
         LinkedList<String> list = new LinkedList<>();
