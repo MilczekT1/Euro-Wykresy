@@ -318,7 +318,7 @@ final class TreblinkaFirst extends SQLServerConnector {
             instances.clear();
         
         for (String db : allInstances){
-            if (Pattern.matches("e([1-9]|[1-9]{1}[0-9]+)_VfiTag",db))
+            if (Pattern.matches("e([1-9]|[1-9][0-9]+)_VfiTag",db))
                 instances.add(db);
         }
     }
@@ -326,8 +326,8 @@ final class TreblinkaFirst extends SQLServerConnector {
     public LinkedList<ChartPoint> dbImportGateValues(String gateId, long start, long end) throws SQLException {
         
         ArrayList<String> selectFromInstanceQuerries = new ArrayList<>(10);
-        for (int i=0 ; i < instances.size(); i++){
-            selectFromInstanceQuerries.add("SELECT time, value FROM " + instances.get(i) + ".dbo.VfiTagNumHistory WHERE gateId = " + gateId + " AND time BETWEEN " + start + " AND " + end + ";");
+        for (String instance : instances) {
+            selectFromInstanceQuerries.add("SELECT time, value FROM " + instance + ".dbo.VfiTagNumHistory WHERE gateId = " + gateId + " AND time BETWEEN " + start + " AND " + end + ";");
         }
         LinkedList<ChartPoint> points = new LinkedList<>();
         @Cleanup
