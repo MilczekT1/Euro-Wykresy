@@ -37,6 +37,7 @@ final class DBDataImporter extends Thread {
             Controller.getInstance().changeProgress(0);
             Utils.showMessageDialog("Blad importu danych do wykresu!");
             ThreadPool.getInstance().shutdownNow();
+            ThreadPool.turnOnAfterShutdown();
             return;
         }
         

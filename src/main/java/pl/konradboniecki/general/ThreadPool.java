@@ -8,7 +8,7 @@ public final class ThreadPool {
     public static ExecutorService getInstance(){
         return instance;
     }
-    public void turnOnAfterShutdown(){
+    public static void turnOnAfterShutdown(){
         instance = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 }
