@@ -78,7 +78,6 @@ public final class Controller implements Initializable {
     private XYDataset xyDigitalDataset;
     
     public void importChartData() {
-        Runtime.getRuntime().gc();
         LocalDate startDate = /*LocalDate.of(2017,2,1);*/ startDatePicker.getValue();
         LocalTime startTime = /*LocalTime.of(12,0);*/ startTimePicker.getValue();
         LocalDate endDate = /*LocalDate.of(2017,3,1);*/ endDatePicker.getValue();
@@ -605,7 +604,6 @@ public final class Controller implements Initializable {
                 addComboBoxOptionsFromList(comboNotOnChartGates, gatesNotOnChartList, Collections.singletonList(selectedGateToRemove));
                 comboOnChartGates.getItems().remove(selectedGateToRemove);
                 comboOnChartGates.getSelectionModel().clearSelection();
-                Runtime.getRuntime().gc();
             }
         });
     }
@@ -692,6 +690,5 @@ public final class Controller implements Initializable {
         comboChooseGroup.setDisable(false);
         comboNotOnChartGates.setDisable(false);
         comboOnChartGates.setDisable(false);
-        Runtime.getRuntime().gc();
     }
 }
