@@ -10,7 +10,7 @@ import java.util.logging.Level;
 
 public abstract class SQLServerConnector {
     protected static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    protected static Connection connection;
+    protected Connection connection;
     protected String SERVER_ADRESS;
     protected String USERNAME;
     protected String PASSWORD;
