@@ -1,5 +1,6 @@
 package pl.konradboniecki.servers;
 
+import pl.konradboniecki.general.Configurator;
 import pl.konradboniecki.structures.ChartPoint;
 import pl.konradboniecki.structures.GroupGate;
 import pl.konradboniecki.structures.MinMax;
@@ -12,8 +13,13 @@ class SourceManager {
     private static TreblinkaFirst treblinkaFirst = TreblinkaFirst.getInstance();
     private static TreblinkaSecond treblinkaSecond = TreblinkaSecond.getInstance();
     private static Paterek paterek = Paterek.getInstance();
+    private static String localisation;
     
     private static SourceManager instance = new SourceManager();
+    
+    private SourceManager(){
+        this.localisation = Configurator.getCurrentProperty("localisation").toLowerCase();
+    }
     
     static SourceManager getInstance() throws NullPointerException {
         if (instance != null) {
@@ -30,19 +36,22 @@ class SourceManager {
             counter++;
         } catch (Exception e) {
             e.printStackTrace();
-        }/*
+        }
         try {
             treblinkaSecond.connect();
             counter++;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try {
-            paterek.connect();
-            counter++;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
+        
+        if (localisation.equals("paterek")){
+            try {
+                paterek.connect();
+                counter++;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         if (counter > 0)
             return counter;
         else
@@ -54,10 +63,6 @@ class SourceManager {
         
         if (treblinkaFirst.isConnected())
             allAvailableGroupNames.addAll(treblinkaFirst.dbGetAllExistingGroupNames());
-        //if (treblinkaSecond.isConnected())
-        //    allAvailableGroupNames.addAll(treblinkaSecond.dbGetAllExistingGroupNames());
-        //if (paterek.isConnected())
-        //    allAvailableGroupNames.addAll(paterek.dbGetAllExistingGroupNames());
         
         return allAvailableGroupNames;
     }
@@ -66,10 +71,6 @@ class SourceManager {
         
         if (treblinkaFirst.isConnected())
             allAvailableGates.addAll(treblinkaFirst.dbGetAllGates());
-        //if (treblinkaSecond.isConnected())
-        //    allAvailableGates.addAll(treblinkaSecond.dbGetAllGates());
-        //if (paterek.isConnected())
-        //    allAvailableGates.addAll(paterek.dbGetAllGates());
         
         return allAvailableGates;
     }
@@ -78,10 +79,6 @@ class SourceManager {
         
         if (treblinkaFirst.isConnected())
             allAvailableGates.addAll(treblinkaFirst.dbGetAllGatesFromGroup(groupName));
-        //if (treblinkaSecond.isConnected())
-        //    allAvailableGates.addAll(treblinkaSecond.dbGetAllGatesFromGroup(groupName));
-        //if (paterek.isConnected())
-        //    allAvailableGates.addAll(paterek.dbGetAllGatesFromGroup(groupName));
         
         return allAvailableGates;
     }
@@ -107,18 +104,41 @@ class SourceManager {
         }
         return false;
     }
+    
     MinMax getMinAndMaxAvailableTimePoints() throws SQLException{
-        long max = -1;
-        long min = -1;
-        if (treblinkaFirst.isConnected()){
-            return treblinkaFirst.getMinAndMaxTimePoints();
+        // Opposite direction in constructor
+        MinMax minMax1 = new MinMax(Long.MAX_VALUE, Long.MIN_VALUE);
+        MinMax minMax2 = new MinMax(Long.MAX_VALUE, Long.MIN_VALUE);
+        MinMax minMax3 = new MinMax(Long.MAX_VALUE, Long.MIN_VALUE);
+        
+        if (treblinkaFirst.isConnected())
+            minMax1 = treblinkaFirst.getMinAndMaxTimePoints();
+        
+        if (treblinkaSecond.isConnected())
+            minMax2 = treblinkaSecond.getMinAndMaxTimePoints();
+        
+        if (localisation.equals("paterek")){
+            if (paterek.isConnected()){
+                //minMax3 = paterek.getMinAndMaxTimePoints();
+            }
         }
-        return new MinMax(-1,-1);
+        
+        MinMax result = new MinMax(minMax1,minMax2);
+        result = new MinMax(result,minMax3);
+        return result;
     }
     public static LinkedList<ChartPoint> importGateValues(String gateId, long start, long end) throws SQLException {
-        if (treblinkaFirst.isConnected()){
-            return treblinkaFirst.dbImportGateValues(gateId, start, end);
+        LinkedList<ChartPoint> chartPoints = new LinkedList<>();
+        if (treblinkaFirst.isConnected())
+            chartPoints.addAll(treblinkaFirst.dbImportGateValues(gateId, start, end));
+        
+        if (treblinkaSecond.isConnected())
+            chartPoints.addAll(treblinkaSecond.dbImportGateValues(gateId, start, end));
+    
+        if (localisation.equals("paterek")){
+            if (paterek.isConnected())
+                chartPoints.addAll(paterek.dbImportGateValues(gateId, start, end));
         }
-        return null;
+        return chartPoints;
     }
 }
