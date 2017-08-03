@@ -71,9 +71,6 @@ final class TreblinkaFirst extends SQLServerConnector {
         }
     }
     
-    
-    
-    
     LinkedList<String> dbGetAllExistingGroupNames(){
         LinkedList<String> list = new LinkedList<>();
         try {
@@ -288,11 +285,8 @@ final class TreblinkaFirst extends SQLServerConnector {
         while(resultSet.next()){
             allInstances.add(resultSet.getString(1));
         }
-    
-        if (instances == null)
-            instances = new ArrayList<>(20);
-        else
-            instances.clear();
+        
+        instances = new ArrayList<>(20);
         
         for (String db : allInstances){
             if (Pattern.matches("e([1-9]|[1-9][0-9]+)_VfiTag",db))
@@ -300,7 +294,10 @@ final class TreblinkaFirst extends SQLServerConnector {
         }
     }
     
-    public LinkedList<ChartPoint> dbImportGateValues(String gateId, long start, long end) throws SQLException {
+     LinkedList<ChartPoint> dbImportGateValues(String gateId, long start, long end) throws SQLException {
+        
+        if (instances == null || instances.size() == 0)
+            setAllInstances();
         
         ArrayList<String> selectFromInstanceQuerries = new ArrayList<>(10);
         for (String instance : instances) {

@@ -1,30 +1,27 @@
 package pl.konradboniecki.servers;
 
-import com.google.common.base.Throwables;
 import lombok.Cleanup;
 import pl.konradboniecki.general.Configurator;
-import pl.konradboniecki.general.MyLogger;
-import pl.konradboniecki.structures.GroupGate;
+import pl.konradboniecki.structures.ChartPoint;
+import pl.konradboniecki.structures.MinMax;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.*;
-import java.util.Collections;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
+import java.util.regex.Pattern;
 
-class TreblinkaSecond {
-    private static final String DB_TREBLINKA_2       = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Adress-Treblinka-2");
-    private static final String USERNAME_TREBLINKA_2 = Configurator.getCurrentSettings().getProperty("User-Treblinka-2");
-    private static final String PASSWORD_TREBLINKA_2 = Configurator.getCurrentSettings().getProperty("Password-Treblinka-2");
-    private static final String DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static Connection connection;
+class TreblinkaSecond extends SQLServerConnector{
     private static TreblinkaSecond instance = new TreblinkaSecond();
+    private ArrayList<String> instances;
+    
+    private TreblinkaSecond(){
+        this.SERVER_ADRESS = "jdbc:sqlserver://" + Configurator.getCurrentSettings().getProperty("Adress-Treblinka-2");
+        this.USERNAME = Configurator.getCurrentProperty("User-Treblinka-2");
+        this.PASSWORD = Configurator.getCurrentProperty("Password-Treblinka-2");
+    }
+    
     static TreblinkaSecond getInstance() throws NullPointerException{
         if (instance != null) {
             return instance;
@@ -33,144 +30,65 @@ class TreblinkaSecond {
         }
     }
     
-    private TreblinkaSecond(){}
-    
-    boolean isConnected(){
-        try {
-            return (connection != null && !connection.isClosed() && connection.isValid(3000)) ? true : false;
-        } catch (SQLException e) {
-            return false;
-        }
+    @Override
+    protected void setUpStructuresIfNotExists() throws SQLException {
+        ;
     }
     
-    void connect() throws Exception {
-        if (!isConnected()){
-            Class.forName(DRIVER).newInstance();
-            connection = DriverManager.getConnection(DB_TREBLINKA_2, USERNAME_TREBLINKA_2, PASSWORD_TREBLINKA_2);
-            
-            try {
-                setUpStructuresIfNotExists();
-            } catch (SQLException e) {
-                MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
+    MinMax getMinAndMaxTimePoints() throws SQLException {
+        long min = Long.MAX_VALUE;
+        long max = Long.MIN_VALUE;
+        setAllInstances();
+        
+        @Cleanup
+        Statement statement = connection.createStatement();
+        String findMinSQL = null;
+        for (String db : instances) {
+            findMinSQL = "USE " + db + "; SELECT MIN(time), MAX(time) FROM dbo.VfiTagNumHistory";
+            @Cleanup ResultSet rs = statement.executeQuery(findMinSQL);
+            if (rs.next()) {
+                min = rs.getLong(1) <= min ? rs.getLong(1) : min;
+                max = rs.getLong(2) >= max ? rs.getLong(2) : max;
             }
         }
+        return new MinMax(min,max);
     }
-    private void setUpStructuresIfNotExists() throws SQLException{
+    void setAllInstances() throws SQLException {
+        String findInstancesSQL = "SELECT DB_NAME(database_id) AS [Database], database_id FROM sys.databases;";
+        @Cleanup
+        Statement statement = connection.createStatement();
+        @Cleanup
+        ResultSet resultSet = statement.executeQuery(findInstancesSQL);
+        ArrayList<String> allInstances = new ArrayList<>(20);
+        while(resultSet.next()){
+            allInstances.add(resultSet.getString(1));
+        }
+        
+        instances = new ArrayList<>(20);
+        
+        for (String db : allInstances){
+            if (Pattern.matches("e([1-9]|[1-9][0-9]+)_VfiTag",db))
+                instances.add(db);
+        }
+    }
+    LinkedList<ChartPoint> dbImportGateValues(String gateId, long start, long end) throws SQLException {
+    
+        if (instances == null || instances.size() == 0)
+            setAllInstances();
+    
+        ArrayList<String> selectFromInstanceQuerries = new ArrayList<>(10);
+        for (String instance : instances) {
+            selectFromInstanceQuerries.add("SELECT time, value FROM " + instance + ".dbo.VfiTagNumHistory WHERE gateId = " + gateId + " AND time BETWEEN " + start + " AND " + end + ";");
+        }
+        LinkedList<ChartPoint> points = new LinkedList<>();
         @Cleanup Statement statement = connection.createStatement();
-        try {
-            Path path = Paths.get("src/main/resources/", "Treblinka-groups-1.sql");
-            List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
-            List<String> queries = new LinkedList<>();
-            
-            StringBuilder foundQuery = new StringBuilder();
-            for (String line : lines){
-                foundQuery.append(line);
-                if (line.endsWith(";")){
-                    queries.add(foundQuery.toString());
-                    foundQuery = new StringBuilder();
-                }
-            }
-            for (String fromFileQuery: queries)
-                executeCreateIfNotExists(fromFileQuery, statement);
-            
-        } catch (FileNotFoundException e) {
-            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Create_Users.sql");
-        } catch(IOException e) {
-            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU Create_Users.sql");
-        }
-    }
-    private void executeCreateIfNotExists(String query, Statement statement){
-        try {
-            statement.execute(query);
-        } catch (SQLException e) {
-            // One of the scripts from "Treblinka-groups-1.sql" failed (because exists)
-        }
-    }
-    public void closeConnection()throws SQLException{
-        if (!connection.isClosed()) {
-            connection.close();
-        }
-    }
     
-    List<String> dbGetAllExistingGroupNames(){
-        List<String> list = new LinkedList<>();
-        try {
-            @Cleanup
-            Statement statement = connection.createStatement();
-            @Cleanup ResultSet rs = statement.executeQuery("select Nazwa from KONRAD_GRUPY");
-            while(rs.next()){
-                list.add(rs.getString("Nazwa"));
+        for (String query : selectFromInstanceQuerries) {
+            @Cleanup ResultSet resultSet = statement.executeQuery(query);
+            while (resultSet.next()) {
+                points.add(new ChartPoint(resultSet.getLong("time"), resultSet.getDouble("value")));
             }
-            return list;
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
         }
-        return Collections.emptyList();
-    }
-    List<GroupGate> dbGetAllGates() {
-        try {
-            String sql = "USE wizualizacja2 " + "SELECT gateId " + "      ,LongGate AS Skrocona_Nazwa " + "      ,description AS Opis " + "      ,rodzajBramki " + "      ,rodzajPomiaru " + "  FROM Slownik;";
-            @Cleanup Statement statement = connection.createStatement();
-    
-            @Cleanup ResultSet rs = statement.executeQuery(sql);
-            LinkedList<GroupGate> groupGates = new LinkedList<>();
-            while (rs.next()) {
-                String[] strings = new String[6];
-                strings[0] = rs.getString("Opis");
-                strings[1] = rs.getString("GateID");
-                strings[2] = null;
-                strings[3] = rs.getString("rodzajPomiaru");
-                strings[4] = rs.getString("rodzajBramki");
-                strings[5] = rs.getString("Skrocona_Nazwa");
-                groupGates.add(new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
-            }
-            return groupGates;
-        } catch (SQLException e){
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-            return Collections.EMPTY_LIST;
-        }
-    }
-    List<GroupGate> dbGetAllGatesFromGroup(String groupName){
-        try {
-            String getGroupIdSQL = "USE wizualizacja; SELECT Id_grupy FROM EW_Grupy WHERE Nazwa = ?;";
-            @Cleanup
-            PreparedStatement preStatement = connection.prepareStatement(getGroupIdSQL);
-            preStatement.setString(1,groupName);
-            @Cleanup
-            ResultSet rs = preStatement.executeQuery();
-            if(rs.next()) {
-                String wantedId = rs.getString("Id_grupy");
-                
-                String getDataSQL = "USE wizualizacja; " +
-                                            " SELECT description, " +
-                                            " Slownik.gateId, " +
-                                            " rodzajPomiaru," +
-                                            " rodzajBramki, " +
-                                            " LongGate " +
-                                            " FROM Slownik" +
-                                            " Join EW_Bramki ON EW_Bramki.GateId=Slownik.gateId WHERE Id_grupy=?;";
-                
-                preStatement = connection.prepareStatement(getDataSQL);
-                preStatement.setString(1,wantedId);
-                rs = preStatement.executeQuery();
-                
-                LinkedList<GroupGate> groupGates = new LinkedList<>();
-                while (rs.next()) {
-                    String[] strings = new String[6];
-                    strings[0] = rs.getString("description");
-                    strings[1] = rs.getString("gateId");
-                    strings[2] = wantedId;
-                    strings[3] = rs.getString("rodzajPomiaru");
-                    strings[4] = rs.getString("rodzajBramki");
-                    strings[5] = rs.getString("LongGate");
-                    groupGates.add(new GroupGate(strings[0], strings[1], strings[2], strings[3], strings[4], strings[5]));
-                }
-                return groupGates;
-            }
-            return Collections.EMPTY_LIST;
-        } catch (SQLException e) {
-            MyLogger.getLogger().log(Level.WARNING, Throwables.getStackTraceAsString(e).trim());
-            return Collections.EMPTY_LIST;
-        }
+        return points;
     }
 }
