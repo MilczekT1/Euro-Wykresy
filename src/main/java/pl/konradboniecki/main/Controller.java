@@ -130,7 +130,7 @@ public final class Controller implements Initializable {
         login_Label.setText("");
         try{
             DBAuthenticator.getInstance().connect();
-            if (DBAuthenticator.tryToLogin(login, Utils.hashPassword(password), dataContainer)) {
+            if (DBAuthenticator.getInstance().tryToLogin(login, Utils.hashPassword(password), dataContainer)) {
                 accessLevel = dataContainer.getAccessLevel();
                 login_Label.setTextFill(Paint.valueOf("green"));
                 login_Label.setText("Udane logowanie");
@@ -178,7 +178,7 @@ public final class Controller implements Initializable {
     
             try {
                 DBAuthenticator.getInstance().connect();
-                if (DBAuthenticator.tryToRegister(login, Utils.hashPassword(password))) {
+                if (DBAuthenticator.getInstance().tryToRegister(login, Utils.hashPassword(password))) {
                     register_Label.setTextFill(Paint.valueOf("green"));
                     register_Label.setText("Udana rejestracja");
                 } else {

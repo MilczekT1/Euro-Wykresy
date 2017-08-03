@@ -66,7 +66,7 @@ final class DBAuthenticator extends SQLServerConnector{
         }
     }
     
-    static Boolean tryToLogin(String login, String password, GuiDataContainer gdc){
+    Boolean tryToLogin(String login, String password, GuiDataContainer gdc){
         String sql  = "USE wizualizacja;" +
                               "SELECT * FROM EW_Uzytkownicy WHERE Login=? AND Haslo=?";
         try {
@@ -88,7 +88,7 @@ final class DBAuthenticator extends SQLServerConnector{
             return false;
         }
     }
-    static boolean tryToRegister(String login, String password) {
+    boolean tryToRegister(String login, String password) {
         String sql  = "USE wizualizacja;" +
                               "SELECT * FROM EW_Uzytkownicy WHERE Login=?";
         try {
