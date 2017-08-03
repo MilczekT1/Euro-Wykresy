@@ -42,7 +42,7 @@ final class TreblinkaFirst extends SQLServerConnector {
     protected void setUpStructuresIfNotExists() throws SQLException{
         @Cleanup Statement statement = connection.createStatement();
         try {
-            Path path = Paths.get("src/main/resources/", "Treblinka-groups-1.sql");
+            Path path = Paths.get("src/main/resources/", "MainServer-groups.sql");
             List<String> lines = Files.readAllLines(path, Charset.forName("UTF-8"));
             List<String> queries = new LinkedList<>();
         
@@ -58,9 +58,9 @@ final class TreblinkaFirst extends SQLServerConnector {
                 executeCreateIfNotExists(fromFileQuery, statement);
         
         } catch (FileNotFoundException e) {
-            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU Treblinka-groups-1.sql");
+            MyLogger.getLogger().log(Level.WARNING, "NIE ZNALEZIONO PLIKU MainServer-groups.sql");
         } catch(IOException e) {
-            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU Treblinka-groups-1.sql");
+            MyLogger.getLogger().log(Level.WARNING, "BLAD ODCZYTU PLIKU MainServer-groups.sql");
         }
     }
     private void executeCreateIfNotExists(String query, Statement statement){
