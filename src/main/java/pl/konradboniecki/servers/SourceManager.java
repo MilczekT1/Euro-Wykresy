@@ -44,13 +44,11 @@ class SourceManager {
             e.printStackTrace();
         }
         
-        if (localisation.equals("paterek")){
-            try {
-                paterek.connect();
-                counter++;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            paterek.connect();
+            counter++;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         if (counter > 0)
             return counter;
@@ -117,11 +115,9 @@ class SourceManager {
         if (treblinkaSecond.isConnected())
             minMax2 = treblinkaSecond.getMinAndMaxTimePoints();
         
-        if (localisation.equals("paterek")){
-            if (paterek.isConnected()){
-                //minMax3 = paterek.getMinAndMaxTimePoints();
-            }
-        }
+        if (paterek.isConnected())
+            minMax3 = paterek.getMinAndMaxTimePoints();
+        
         
         MinMax result = new MinMax(minMax1,minMax2);
         result = new MinMax(result,minMax3);
@@ -134,11 +130,10 @@ class SourceManager {
         
         if (treblinkaSecond.isConnected())
             chartPoints.addAll(treblinkaSecond.dbImportGateValues(gateId, start, end));
-    
-        if (localisation.equals("paterek")){
-            if (paterek.isConnected())
-                chartPoints.addAll(paterek.dbImportGateValues(gateId, start, end));
-        }
+        
+        if (paterek.isConnected())
+            chartPoints.addAll(paterek.dbImportGateValues(gateId, start, end));
+        
         return chartPoints;
     }
 }

@@ -29,39 +29,13 @@ public final class Configurator {
         ArrayList<String> adresses = new ArrayList<>(3);
         ArrayList<String> users = new ArrayList<>(3);
         ArrayList<String> passwords = new ArrayList<>(3);
-        String firstAdress = null;
-        String secondAdress = null;
-        String user = null;
-        String password = null;
-        String localisation = null;
         Optional<String> result;
-    
-        result = Utils.getStringFromDialog("LOKALIZACJA PATEREK/TRZEBINIA", "LOKALIZACJA PATEREK/TRZEBINIA","LOKALIZACJA PATEREK/TRZEBINIA");
-        if (result.isPresent()) {
-            localisation = result.get();
-            localisation = localisation.toLowerCase();
-        } else {
-            logger.log(Level.CONFIG, "Nie wprowadzono lokalizacji");
-            System.exit(1);
-        }
         
         setFirstTreblinka(adresses,users,passwords);
         setSecondTreblinka(adresses,users,passwords);
         setPaterek(adresses, users, passwords);
         
-        
-        
-        result = Utils.getStringFromDialog("Konfiguracja polaczenia", "Konfiguracja polaczenia", "Krok 2/4: drugie IP + port");
-        if (result.isPresent()) {
-            secondAdress = result.get();
-        }
-        else {
-            logger.log(Level.CONFIG, "Nie wprowadzono adresu ip i/lub portu");
-            System.exit(1);
-        }
-        
         Properties defSettings = new Properties();
-        defSettings.setProperty("localisation", localisation);
         
         defSettings.setProperty("User-Treblinka-1", users.remove(0));
         defSettings.setProperty("Password-Treblinka-1", passwords.remove(0));
