@@ -33,7 +33,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>sample.pl.konradboniecki.main.Main</mainClass>
+                                    <mainClass>pl.konradboniecki.main.Main</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
@@ -97,4 +97,11 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>dev</id>
+            <name>Local repository</name>
+            <url>file://${user.home}/.m2/repository</url>
+        </repository>
+    </distributionManagement>
 </project>
